@@ -1,1 +1,1 @@
-# CS 512: Intro to Computer Graphics
+# CS 512 - Intro to Computer Graphics
