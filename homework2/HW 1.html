@@ -51,7 +51,6 @@
   <!-- MAKE SURE YOU UPDATE YOUR EDITS HERE -->
   <!-- Vertex Shader -->
   <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
-  in float aIndex;
   in vec3 aPosition;
   in vec3 aColor;
 
@@ -59,13 +58,76 @@
   uniform float uTime; //time in sec
   out vec3 vColor;
 
-  void main() {
-    float scale = 0.5;
-    float t = (uTime/2.+aIndex/uCount) - floor(uTime/2.+aIndex/uCount);
-    if(t<0.5) scale += t;
-    else scale += 1.-t;
+  const float PI = 3.14159265;
 
-    gl_Position = vec4(scale*aPosition, 1.0);
+  // WebGL matrices are constructed in column-major order
+  //                             | 1.  0.  tx |
+  // 3x3 translation matrix: T = | 0.  1.  ty |  
+  //                             | 0.  0.  1. |
+  mat3 translationMatrix(float tx, float ty) {
+    return mat3(1., 0., 0.,
+                0., 1., 0.,
+                tx, ty, 1.);
+  }
+
+  //                         | sx  0.  0. |
+  // 3x3 scaling matrix: S = | 0.  sy  0. |  
+  //                         | 0.  0.  1. |
+  mat3 scalingMatrix(float sx, float sy) {
+    return mat3(sx, 0., 0.,
+                0., sy, 0.,
+                0., 0., 1.);
+  }
+
+  // Rodrigues' Rotation Formula 
+  // 3x3 rotation matrix          | cosθ+(1-cosθ)x²      (1-cosθ)xy - z sinθ   (1-cosθ)xz + y sinθ |
+  // angle θ around vector v: R = | (1-cosθ)xy + z sinθ  cosθ + (1-cosθ)y²     (1-cosθ)yz - x sinθ |  
+  //                              | (1-cosθ)xz - y sinθ  (1-cosθ)yz + x sinθ   cosθ + (1-cosθ)z²   |
+  mat3 rotationMatrix(float a, vec3 v) {
+    float x = v.x;
+    float y = v.y;
+    float z = v.z;
+    float sinA = sin(a);
+    float cosA = cos(a);
+    float cosA_1 = 1. - cosA;
+    return mat3(cosA + cosA_1*x*x,   cosA_1*x*y + z*sinA, cosA_1*x*z - y*sinA,
+                cosA_1*x*y - z*sinA, cosA + cosA_1*y*y,   cosA_1*y*z + x*sinA,
+                cosA_1*x*z + y*sinA, cosA_1*y*z - x*sinA,  cosA + cosA_1*z*z);
+  }
+
+  // default to rotating around z-axis: v = vec3(0., 0., 1.)
+  mat3 rotationMatrix(float a) {
+    return rotationMatrix(a, vec3(0., 0., 1.));
+  }
+
+  //                          | 1.   shx  0. |
+  // 3x3 shearing matrix: S = | shy  1.   0. |  
+  //                          | 0.   0.   1. |
+  mat3 shearMatrix(float shx, float shy) {
+    return mat3(1., shy, 0.,
+                shx, 1., 0.,
+                0.,  0., 1.);
+  }
+
+  void main() {
+    float t = sin(uTime);
+    float s = 0.7 + 0.3*t;
+    mat3 S = scalingMatrix(s, s);
+    mat3 R = rotationMatrix(2.*PI*t);
+    mat3 T = translationMatrix(0., -0.3*t);
+
+    // save the z coordinate since we are
+    // performing 2D transformations
+    float z = aPosition.z;
+
+    // set z coordinate to homogeneous
+    // coordinate for translation
+    vec3 pos = T * R * S * vec3(aPosition.xy, 1.);
+
+    // set z coordinate back to original value
+    pos.z = z;
+
+    gl_Position = vec4(pos, 1.0);
     vColor = aColor;
   }
   </script>
@@ -81,12 +143,9 @@
   out vec4 fragColor;
 
   void main() {
-    float scale = 0.5;
-    float t = uTime/2. - floor(uTime/2.);
-    if(t<0.5) scale += t;
-    else scale += 1.-t;
+    float t = 0.5 + 0.5*abs(sin(uTime));
 
-    vec3 color = scale*vColor + (1. -scale)*vColor.zxy;
+    vec3 color = t*vColor + (1. - t)*vColor.zxy;
 
     fragColor = vec4(color, 1.0);
   }
@@ -135,8 +194,8 @@
     vsEditor.value = document.getElementById("vertex-shader").textContent;
     fsEditor.value = document.getElementById("fragment-shader").textContent;
 
-    let program, posLoc, indexLoc, colorLoc, timeLoc, countLoc;
-    let posBuffer, indexBuffer, colorBuffer;
+    let program, posLoc, colorLoc, timeLoc, countLoc;
+    let posBuffer, colorBuffer;
 
     // --- Buffers ---
     function initBuffers() {
@@ -147,10 +206,6 @@
       colorBuffer = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
       gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
-
-      indexBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, indexBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, indices, gl.STATIC_DRAW);
     }
 
     initBuffers();
@@ -161,7 +216,6 @@
         gl.useProgram(program);
         posLoc = gl.getAttribLocation(program, "aPosition");
         colorLoc = gl.getAttribLocation(program, "aColor");
-        indexLoc = gl.getAttribLocation(program, "aIndex");
         timeLoc = gl.getUniformLocation(program, "uTime");
         countLoc = gl.getUniformLocation(program, "uCount");
       } catch (e) { console.error(e); }
@@ -189,11 +243,6 @@
       gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
       gl.enableVertexAttribArray(colorLoc);
       gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
-
-      // Index buffer binding
-      gl.bindBuffer(gl.ARRAY_BUFFER, indexBuffer);
-      gl.enableVertexAttribArray(indexLoc);
-      gl.vertexAttribPointer(indexLoc, 1, gl.FLOAT, false, 0, 0);
 
       //delta time in ms
       let deltaTime = Date.now() - startTime;

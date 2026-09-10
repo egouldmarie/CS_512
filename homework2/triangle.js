@@ -13,9 +13,3 @@ const colors = new Float32Array([
     0.0, 1.0, 0.0, // Green
     0.0, 0.0, 1.0 // Blue
 ]);
-
-const indices = new Float32Array([
-    0, // vertex 1
-    1, // vertex 2
-    2 // vertex 3
-]);
