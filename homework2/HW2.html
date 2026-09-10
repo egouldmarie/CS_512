@@ -80,9 +80,9 @@
   }
 
   // Rodrigues' Rotation Formula 
-  // 3x3 rotation matrix          | cosθ+(1-cosθ)x²      (1-cosθ)xy - z sinθ   (1-cosθ)xz + y sinθ |
-  // angle θ around vector v: R = | (1-cosθ)xy + z sinθ  cosθ + (1-cosθ)y²     (1-cosθ)yz - x sinθ |  
-  //                              | (1-cosθ)xz - y sinθ  (1-cosθ)yz + x sinθ   cosθ + (1-cosθ)z²   |
+  // 3x3 rotation matrix          | cosθ+(1-cosθ)x²      (1-cosθ)xy - z sinθ  (1-cosθ)xz + y sinθ |
+  // angle θ around vector v: R = | (1-cosθ)xy + z sinθ  cosθ + (1-cosθ)y²    (1-cosθ)yz - x sinθ |  
+  //                              | (1-cosθ)xz - y sinθ  (1-cosθ)yz + x sinθ  cosθ + (1-cosθ)z²   |
   mat3 rotationMatrix(float a, vec3 v) {
     float x = v.x;
     float y = v.y;
