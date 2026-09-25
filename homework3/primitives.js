@@ -61,3 +61,5 @@ function makeRectangularPrism(w, h, d) {
 
   return {positions, indices, colors}
 }
+
+function makeSphere(r, ) {}

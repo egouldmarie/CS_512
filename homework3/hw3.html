@@ -19,6 +19,10 @@
       height: 250px;
     }
 
+    input {
+      width: 100px;
+    }
+
     canvas {
       border: 1px solid #444;
     }
@@ -28,10 +32,10 @@
 <body>
   <h2>Interactive Controls & Geometric Primitives</h2>
   <p>Edit vertex and fragment shaders on the left to get the result instantly.<br>
-  Use mouse to drag and rotate the cube. <br>
-Use arrow keys and w, s keys to move the camera.<br>
-Save your code to source file if you want to save it.<br>
-Press F12 to see the console for debugging.</p>
+    Use mouse to drag and rotate the cube. Shift+click and drag to change position.<br>
+    Use arrow keys and w, s keys to move the camera.<br>
+    Save your code to source file if you want to save it.<br>
+    Press F12 to see the console for debugging.</p>
 
   <div style="display: flex; gap: 10px; align-items: flex-start;">
     <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -46,22 +50,30 @@ Press F12 to see the console for debugging.</p>
     </div>
     <div style="display: flex; flex-direction: column; gap: 10px;">
       <div>
-        <b>Controls</b><br>
-        <div style="display: flex; gap: 10px; align-items: flex-start;">
+        <b>Controls</b><br><br>
+        <div style="display: flex; gap: 20px; align-items: flex-start;">
           <div>
-            <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="xRot">X Rotation</input></br>
-            <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="yRot">Y Rotation</input></br>
-            <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="zRot">Z Rotation</input></br>
+            Rotation<br/>
+            X: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="xRot"/></br>
+            Y: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="yRot"/></br>
+            Z: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="zRot"/></br>
           </div>
           <div>
-            <input type="range" min="-2" max="2" step="0.01" value="0" id="xPos">X Position</input></br>
-            <input type="range" min="-2" max="2" step="0.01" value="0" id="yPos">Y Position</input></br>
-            <input type="range" min="-2" max="2" step="0.01" value="0" id="zPos">Z Position</input></br>
+            Position<br/>
+            X: <input type="range" min="-2" max="2" step="0.01" value="0" id="xPos"/></br>
+            Y: <input type="range" min="-2" max="2" step="0.01" value="0" id="yPos"/></br>
+            Z: <input type="range" min="-2" max="2" step="0.01" value="0" id="zPos"/></br>
+          </div>
+          <div>
+            Scale<br/>
+            X: <input type="range" min="0.1" max="4" step="0.01" value="1" id="xScale"/></br>
+            Y: <input type="range" min="0.1" max="4" step="0.01" value="1" id="yScale"/></br>
+            Z: <input type="range" min="0.1" max="4" step="0.01" value="1" id="zScale"/></br>
           </div>
         </div>
       </div>
       <div>
-        <canvas id="glcanvas" width="400" height="400"></canvas>
+        <canvas id="glcanvas" width="450" height="450"></canvas>
       </div>
     </div>
   </div>
@@ -178,10 +190,17 @@ void main() {
       if (!mouseDown) return;
       let dx = e.clientX - lastX;
       let dy = e.clientY - lastY;
-      let xRot = (Number(document.getElementById("xRot").value) + dy * 0.01) % (2*Math.PI);
-      let yRot = (Number(document.getElementById("yRot").value) + dx * 0.01) % (2*Math.PI);
-      document.getElementById("yRot").value = yRot < 0 ? 2*Math.PI + yRot : yRot;
-      document.getElementById("xRot").value = xRot < 0 ? 2*Math.PI + xRot : xRot;
+      if(e.shiftKey) {
+        let xPos = Math.min(2, Math.max(-2, Number(document.getElementById("xPos").value) + dx * 0.01));
+        let yPos = Math.min(2, Math.max(-2, Number(document.getElementById("yPos").value) - dy * 0.01));
+        document.getElementById("yPos").value = yPos;
+        document.getElementById("xPos").value = xPos;
+      } else {
+        let xRot = (Number(document.getElementById("xRot").value) + dy * 0.01) % (2*Math.PI);
+        let yRot = (Number(document.getElementById("yRot").value) + dx * 0.01) % (2*Math.PI);
+        document.getElementById("yRot").value = yRot < 0 ? 2*Math.PI + yRot : yRot;
+        document.getElementById("xRot").value = xRot < 0 ? 2*Math.PI + xRot : xRot;
+      }
       lastX = e.clientX; lastY = e.clientY;
     });
 
@@ -219,7 +238,17 @@ void main() {
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      // rotation matrices
+      // init model transformation matrix as identity matrix
+      let modelTransformationMatrix = mat4Identity();
+
+      // object scaling
+      let scaleX = Number(document.getElementById("xScale").value);
+      let scaleY = Number(document.getElementById("yScale").value);
+      let scaleZ = Number(document.getElementById("zScale").value);
+      let S = [scaleX, 0, 0, 0, 0, scaleY, 0, 0, 0, 0, scaleZ, 0, 0, 0, 0, 1];
+      modelTransformationMatrix = multiplyMat4(S, modelTransformationMatrix);
+
+      // object rotation
       let cubeRotX = Number(document.getElementById("xRot").value)
       let cubeRotY = Number(document.getElementById("yRot").value)
       let cubeRotZ = Number(document.getElementById("zRot").value)
@@ -230,21 +259,23 @@ void main() {
       let rotY = [cx, 0, -sx, 0, 0, 1, 0, 0, sx, 0, cx, 0, 0, 0, 0, 1];
       let rotZ = [cz, sz, 0, 0, -sz, cz, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
       // cubeRotation = rotZ * rotY * rotX
-      let cubeRotation = multiplyMat4(rotY, rotX);
-      cubeRotation = multiplyMat4(rotZ, cubeRotation);
+      let R = multiplyMat4(rotY, rotX);
+      R = multiplyMat4(rotZ, R);
+
+      modelTransformationMatrix = multiplyMat4(R, modelTransformationMatrix);
+
+      // translation
+      let posX = Number(document.getElementById("xPos").value);
+      let posY = Number(document.getElementById("yPos").value);
+      let posZ = Number(document.getElementById("zPos").value);
+      let T = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, posX, posY, posZ, 1]
+      modelTransformationMatrix = multiplyMat4(T, modelTransformationMatrix);
 
       // init model-view matrix as identity matrix
       let modelViewMatrix = mat4Identity();
-      // init model transformation matrix as identity matrix
-      let modelTransformationMatrix = mat4Identity();
-      // any additional transformations applied to the model in its coordinate system
-      //modelTransformationMatrix = multiplyMat4(modelTransformationMatrix);
 
       // delta time in ms
       let deltaTime = Date.now() - startTime;
-
-      // object rotation
-      modelTransformationMatrix = multiplyMat4(modelTransformationMatrix, cubeRotation);
 
       // camera translation
       modelViewMatrix = mat4Translate(modelViewMatrix, [camX, camY, camZ]);
