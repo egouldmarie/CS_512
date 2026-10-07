@@ -100,7 +100,7 @@ class Object {
                 this.matrix
             )
         } else {
-            this.modelMatrix = this.matrix
+            this.modelMatrix = [...this.matrix]
         }
 
         // update this object's childrens' reference frames
