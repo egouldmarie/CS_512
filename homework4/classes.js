@@ -31,6 +31,21 @@ class Object {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW)
     }
 
+    add(object) {
+        if (object.parent) {
+            throw new Error(
+                "Cannot add object, object already has a parent.",
+                this,
+                object
+            )
+        }
+        if (!this.children.includes(object)) {
+            this.children.push(object)
+            object.parent = this
+            object.updateModelMatrix()
+        }
+    }
+
     updateMatrix() {
         // Model Matrix = T • R • S • I
         // Scaling
@@ -54,14 +69,14 @@ class Object {
         ]
 
         // Rotation
-        let cx = Math.cos(this.rotation.y),
-            sx = Math.sin(this.rotation.y)
-        let cy = Math.cos(this.rotation.x),
-            sy = Math.sin(this.rotation.x)
+        let cx = Math.cos(this.rotation.x),
+            sx = Math.sin(this.rotation.x)
+        let cy = Math.cos(this.rotation.y),
+            sy = Math.sin(this.rotation.y)
         let cz = Math.cos(this.rotation.z),
             sz = Math.sin(this.rotation.z)
-        let rotX = [1, 0, 0, 0, 0, cy, sy, 0, 0, -sy, cy, 0, 0, 0, 0, 1]
-        let rotY = [cx, 0, -sx, 0, 0, 1, 0, 0, sx, 0, cx, 0, 0, 0, 0, 1]
+        let rotX = [1, 0, 0, 0, 0, cx, sx, 0, 0, -sx, cx, 0, 0, 0, 0, 1]
+        let rotY = [cy, 0, -sy, 0, 0, 1, 0, 0, sy, 0, cy, 0, 0, 0, 0, 1]
         let rotZ = [cz, sz, 0, 0, -sz, cz, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 
         this.matrix = multiplyMat4(

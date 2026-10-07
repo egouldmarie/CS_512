@@ -20,7 +20,7 @@
     }
 
     input {
-      width: 100px;
+      width: 130px;
     }
 
     canvas {
@@ -33,7 +33,7 @@
 
     td {
       border: 1px solid white;
-      padding: 5px 15px 5px 15px;
+      padding: 5px 14px 5px 14px;
     }
 
     td:hover {
@@ -44,11 +44,9 @@
 
 <body>
   <h2>Interactive Controls & Geometric Primitives</h2>
-  <p>Edit vertex and fragment shaders on the left to get the result instantly.<br/>
-    Use mouse to drag and rotate the cube. Shift+click and drag to change position.<br/>
-    Use arrow keys and w, s keys to move the camera.<br/>
-    Save your code to source file if you want to save it.<br/>
-    Press F12 to see the console for debugging.</p>
+  <div></div>
+  <p>Edit vertex and fragment shaders on the left to get the result instantly. Use mouse to drag and rotate the<br/>
+    selected object. Shift+click and drag to change position. Use arrow keys and w, s keys to move the camera.<br/>
 
   <div style="display: flex; gap: 10px; align-items: flex-start;">
     <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -66,11 +64,11 @@
         <b>Controls</b><br/>
         <table>
             <tr>
-              <td id="seg0" style="color:rgb(255, 115, 206)" onclick="setActiveSegment(0)">Segment A</td>
-              <td id="seg1" style="color:rgb(255, 208, 0)" onclick="setActiveSegment(1)">Segment B</td>
-              <td id="seg2" style="color:rgb(100, 255, 100)" onclick="setActiveSegment(2)">Segment C</td>
-              <td id="seg3" style="color:rgb(48, 176, 255)" onclick="setActiveSegment(3)">Segment D</td>
-              <td id="seg4" style="color:rgb(194, 120, 255)" onclick="setActiveSegment(4)">Segment E</td>
+              <td id="segA" style="color:rgb(255, 115, 206)" onclick="setActiveSegment(0)">Segment A</td>
+              <td id="segB" style="color:rgb(255, 208, 0)" onclick="setActiveSegment(1)">Segment B</td>
+              <td id="segC" style="color:rgb(100, 255, 100)" onclick="setActiveSegment(2)">Segment C</td>
+              <td id="segD" style="color:rgb(48, 176, 255)" onclick="setActiveSegment(3)">Segment D</td>
+              <td id="segE" style="color:rgb(194, 120, 255)" onclick="setActiveSegment(4)">Segment E</td>
             </tr>
         </table>
       </div>
@@ -78,26 +76,26 @@
         <div style="display: flex; gap: 20px; align-items: flex-start;">
           <div>
             Rotation<br/>
-            X: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="xRot" disabled/></br>
-            Y: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="yRot" disabled/></br>
-            Z: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="zRot" disabled/></br>
+            X: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="xRot" oninput="updateObj()"/></br>
+            Y: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="yRot" oninput="updateObj()"/></br>
+            Z: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="zRot" oninput="updateObj()"/></br>
           </div>
           <div>
             Position<br/>
-            X: <input type="range" min="-2" max="2" step="0.01" value="0" id="xPos" disabled /></br>
-            Y: <input type="range" min="-2" max="2" step="0.01" value="0" id="yPos" disabled /></br>
-            Z: <input type="range" min="-2" max="2" step="0.01" value="0" id="zPos" disabled /></br>
+            X: <input type="range" min="-2" max="2" step="0.01" value="0" id="xPos" oninput="updateObj()"/></br>
+            Y: <input type="range" min="-2" max="2" step="0.01" value="0" id="yPos" oninput="updateObj()"/></br>
+            Z: <input type="range" min="-2" max="2" step="0.01" value="0" id="zPos" oninput="updateObj()"/></br>
           </div>
           <div>
             Scale<br/>
-            X: <input type="range" min="1" max="5" step="0.01" value="1" id="xScale" disabled /></br>
-            Y: <input type="range" min="1" max="5" step="0.01" value="1" id="yScale" disabled /></br>
-            Z: <input type="range" min="1" max="5" step="0.01" value="1" id="zScale" disabled /></br>
+            X: <input type="range" min="1" max="5" step="0.01" value="1" id="xScale" oninput="updateObj()"/></br>
+            Y: <input type="range" min="1" max="5" step="0.01" value="1" id="yScale" oninput="updateObj()"/></br>
+            Z: <input type="range" min="1" max="5" step="0.01" value="1" id="zScale" oninput="updateObj()"/></br>
           </div>
         </div>
       </div>
       <div>
-        <canvas id="glcanvas" width="500" height="500"></canvas>
+        <canvas id="glcanvas" width="510" height="510"></canvas>
       </div>
     </div>
   </div>
@@ -147,18 +145,76 @@ void main() {
 
     let shader = new Shader(gl, vertEditor.value, fragEditor.value, {"uTime":{type:"float", value:0}})
 
-    let objSelector = document.getElementById("objSel")
+    let objSelectors = [
+      document.getElementById("segA"),
+      document.getElementById("segB"),
+      document.getElementById("segC"),
+      document.getElementById("segD"),
+      document.getElementById("segE")
+  ]
 
-    let objects = []
-    objects.push(new Object(gl, makeSphere(2, 32, [1, 0.451, 0.808]))) // segment A
-    objects.push(new Object(gl, makePrism(1, 5, 16, [1, 0.816, 0]))) // segment B
-    objects.push(new Object(gl, makeSphere(1.5, 16, [0.392, 1, 0.392]))) // segment C
-    objects.push(new Object(gl, makeSphere(1.5, 16, [0.188, 0.690, 1]))) // segment D
-    objects.push(new Object(gl, makeSphere(1.5, 16, [0.761, 0.471, 1]))) // segment E
+    let segmentA = new Object(gl, makeSphere(2, 32, [1, 0.451, 0.808]))
 
-    let activeObj = objects[0]
+    let pntsB = makePrism(1, 5, 32, [1, 0.816, 0])
+    let cx = Math.cos(Math.PI/2),
+            sx = Math.sin(Math.PI/2)
+    for(let i=0; i<pntsB.positions.length/3; i++) {
+      let y = pntsB.positions[i*3+1]
+      let z = pntsB.positions[i*3+2]
+
+      pntsB.positions[i*3+1] = cx*y - sx*z + 2.5
+      pntsB.positions[i*3+2] = sx*y + cx*z
+    }
+    let segmentB = new Object(gl, pntsB)
+    segmentB.translation.y = 2
+    segmentB.updateMatrix()
+    segmentA.add(segmentB)
+
+    let pntsC = makePrism(0.75, 6, 32, [0.392, 1, 0.392])
+    for(let i=0; i<pntsC.positions.length/3; i++) {
+      let y = pntsC.positions[i*3+1]
+      let z = pntsC.positions[i*3+2]
+
+      pntsC.positions[i*3+1] = cx*y - sx*z + 3
+      pntsC.positions[i*3+2] = sx*y + cx*z
+    }
+    let segmentC = new Object(gl, pntsC)
+    segmentC.translation.y = 5
+    segmentC.updateMatrix()
+    segmentB.add(segmentC)
+
+    let pntsD = makePrism(0.75, 6, 32, [0.188, 0.690, 1])
+    for(let i=0; i<pntsD.positions.length/3; i++) {
+      let y = pntsD.positions[i*3+1]
+      let z = pntsD.positions[i*3+2]
+
+      pntsD.positions[i*3+1] = cx*y - sx*z + 3
+      pntsD.positions[i*3+2] = sx*y + cx*z
+    }
+    let segmentD = new Object(gl, pntsD)
+    segmentD.translation.y = 6
+    segmentD.updateMatrix()
+    segmentC.add(segmentD)
+    let segmentE = new Object(gl, makeSphere(1.5, 16, [0.761, 0.471, 1]))
+    segmentE.translation.y = 7.5
+    segmentE.scale.z = 0.25
+    segmentE.updateMatrix()
+    segmentD.add(segmentE)
+    let objects = [
+      segmentA,
+      segmentB,
+      segmentC,
+      segmentD,
+      segmentE,
+    ]
+
+    let activeObj
+    let activeIdx = 0
     function setActiveSegment(idx) {
+      objSelectors[activeIdx].style.backgroundColor = ""
+      activeIdx = idx
       activeObj = objects[idx]
+      objSelectors[activeIdx].style.backgroundColor = "#444444"
       document.getElementById("xPos").value = activeObj.translation.x;
       document.getElementById("yPos").value = activeObj.translation.y;
       document.getElementById("zPos").value = activeObj.translation.z;
@@ -168,6 +224,20 @@ void main() {
       document.getElementById("xScale").value = activeObj.scale.x;
       document.getElementById("yScale").value = activeObj.scale.y;
       document.getElementById("zScale").value = activeObj.scale.z;
+    }
+    setActiveSegment(activeIdx)
+
+    function updateObj() {
+      activeObj.translation.x = document.getElementById("xPos").value
+      activeObj.translation.y = document.getElementById("yPos").value
+      activeObj.translation.z = document.getElementById("zPos").value
+      activeObj.rotation.x = document.getElementById("xRot").value
+      activeObj.rotation.y = document.getElementById("yRot").value
+      activeObj.rotation.z = document.getElementById("zRot").value
+      activeObj.scale.x = document.getElementById("xScale").value
+      activeObj.scale.y = document.getElementById("yScale").value
+      activeObj.scale.z = document.getElementById("zScale").value
+      activeObj.updateMatrix()
     }
 
     function initShaderProgram() {
@@ -213,12 +283,12 @@ void main() {
     });
 
     // Projection setup
-    let fov = Math.PI / 4, aspect = canvas.width / canvas.height, near = 0.1, far = 100;
+    let fov = Math.PI / 4, aspect = canvas.width / canvas.height, near = 0.1, far = 1000;
     let orthoSize = 2.5;
 
     let camera = new PerspectiveCamera({fov, aspect, near, far});
     //let camera = new OrthographicCamera({orthoSize, aspect, near, far})
-    camera.translation.z = -6
+    camera.translation.z = -50
     camera.updateModelViewMatrix()
 
     document.addEventListener('keydown', e => {
