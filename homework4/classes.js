@@ -1,5 +1,5 @@
 class Object {
-    constructor(positions, colors, indices) {
+    constructor(gl, {positions, colors, indices}) {
         this.positions = positions
         this.colors = colors
         this.indices = indices
@@ -13,6 +13,8 @@ class Object {
         this.scale = { x: 1, y: 1, z: 1 }
         this.translation = { x: 0, y: 0, z: 0 }
         this.rotation = { x: 0, y: 0, z: 0 }
+
+        this.initBuffers(gl)
     }
 
     initBuffers(gl) {
@@ -65,8 +67,83 @@ class Object {
     }
 }
 
+class OrthographicCamera {
+    constructor({orthoSize, aspect, near, far}) {
+        this.orthoSize = orthoSize
+        this.aspect = aspect
+        this.near = near
+        this.far = far
+
+        this.translation = {x:0, y:0, z:0}
+        this.rotation = {x:0, y:0, z:0}
+
+        this.updateModelViewMatrix()
+        this.updateProjectionMatrix()
+    }
+
+    updateProjectionMatrix() {
+        this.projectionMatrix = matMul(
+            box2Cube(-this.orthoSize * this.aspect, this.orthoSize * this.aspect, -this.orthoSize, this.orthoSize, this.near, this.far),
+            flipZ()
+        )
+    }
+
+    updateModelViewMatrix() {
+        // Rotation
+        let cx = Math.cos(this.rotation.y), sx = Math.sin(this.rotation.y)
+        let cy = Math.cos(this.rotation.x), sy = Math.sin(this.rotation.x)
+        let cz = Math.cos(this.rotation.z), sz = Math.sin(this.rotation.z)
+        let rotX = [1, 0, 0, 0, 0, cy, sy, 0, 0, -sy, cy, 0, 0, 0, 0, 1]
+        let rotY = [cx, 0, -sx, 0, 0, 1, 0, 0, sx, 0, cx, 0, 0, 0, 0, 1]
+        let rotZ = [cz, sz, 0, 0, -sz, cz, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+
+        this.modelViewMatrix = multiplyMat4(multiplyMat4(rotZ, multiplyMat4(rotY, rotX)), mat4Identity())
+
+        // Translation
+        this.modelViewMatrix[12] = this.translation.x
+        this.modelViewMatrix[13] = this.translation.y
+        this.modelViewMatrix[14] = this.translation.z
+    }
+}
+
+class PerspectiveCamera {
+    constructor({fov, aspect, near, far}) {
+        this.fov = fov
+        this.aspect = aspect
+        this.near = near
+        this.far = far
+
+        this.translation = {x:0, y:0, z:0}
+        this.rotation = {x:0, y:0, z:0}
+
+        this.updateModelViewMatrix()
+        this.updateProjectionMatrix()
+    }
+
+    updateProjectionMatrix() {
+        this.projectionMatrix = perspective(this.fov, this.aspect, this.near, this.far)
+    }
+
+    updateModelViewMatrix() {
+        // Rotation
+        let cx = Math.cos(this.rotation.y), sx = Math.sin(this.rotation.y)
+        let cy = Math.cos(this.rotation.x), sy = Math.sin(this.rotation.x)
+        let cz = Math.cos(this.rotation.z), sz = Math.sin(this.rotation.z)
+        let rotX = [1, 0, 0, 0, 0, cy, sy, 0, 0, -sy, cy, 0, 0, 0, 0, 1]
+        let rotY = [cx, 0, -sx, 0, 0, 1, 0, 0, sx, 0, cx, 0, 0, 0, 0, 1]
+        let rotZ = [cz, sz, 0, 0, -sz, cz, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+
+        this.modelViewMatrix = multiplyMat4(multiplyMat4(rotZ, multiplyMat4(rotY, rotX)), mat4Identity())
+
+        // Translation
+        this.modelViewMatrix[12] = this.translation.x
+        this.modelViewMatrix[13] = this.translation.y
+        this.modelViewMatrix[14] = this.translation.z
+    }
+}
+
 class Shader {
-    constructor(gl, vertexShader, fragmentShader, uniforms={}, attributes={"position":"", "color":"", "normal":""}) {
+    constructor(gl, vertexShader, fragmentShader, uniforms={}) {
         this.vertexShader = vertexShader
         this.fragmentShader = fragmentShader
         this.uniforms = uniforms
@@ -75,7 +152,7 @@ class Shader {
     }
 
     initialize(gl) {
-        this.program = createProgram(gl, this.vertexShader, this.fragmentShader)
+        this.program = this.createProgram(gl, this.vertexShader, this.fragmentShader)
         gl.useProgram(this.program)
 
         this.updateAttributeLocations(gl)
@@ -83,22 +160,24 @@ class Shader {
     }
 
     updateAttributeLocations(gl) {
-        this.attribLocations = {}
-        for(let i in this.uniforms) {
-            this.attribLocations[i] = gl.getUniformLocation(this.program, this.attributes[i])
-        }
+        this.posLoc = gl.getAttribLocation(this.program, "position")
+        this.colorLoc = gl.getAttribLocation(this.program, "color")
+        this.normLoc = gl.getAttribLocation(this.program, "normal")
     }
 
     updateUniformLocations(gl) {
         this.uniformLocations = {}
+        this.uniformLocations["modelViewMatrix"] = gl.getUniformLocation(this.program, "modelViewMatrix");
+        this.uniformLocations["projectionMatrix"] = gl.getUniformLocation(this.program, "projectionMatrix");
+        this.uniformLocations["modelMatrix"] = gl.getUniformLocation(this.program, "modelMatrix");
         for(let i in this.uniforms) {
-            this.uniformLocations[i] = gl.getUniformLocation(this.program, this.uniforms[i])
+            this.uniformLocations[i] = gl.getUniformLocation(this.program, i)
         }
     }
 
     createProgram(gl, vsSource, fsSource) {
-      let vs = createShader(gl, gl.VERTEX_SHADER, vsSource);
-      let fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+      let vs = this.createShader(gl, gl.VERTEX_SHADER, vsSource);
+      let fs = this.createShader(gl, gl.FRAGMENT_SHADER, fsSource);
       let prog = gl.createProgram();
       gl.attachShader(prog, vs);
       gl.attachShader(prog, fs);
@@ -117,5 +196,38 @@ class Shader {
         throw new Error(gl.getShaderInfoLog(shader));
       }
       return shader;
+    }
+
+    render(gl, objects, camera) {
+        for(let i in this.uniforms) {
+            if(this.uniforms[i].type === "float") {
+                gl.uniform1f(this.uniformLocations[i], this.uniforms[i].value)
+            } else if(this.uniforms[i].type === "mat4") {
+                gl.uniformMatrix4fv(this.uniformLocations[i], this.uniforms[i].value)
+            }
+        }
+
+        // camera matrices
+        gl.uniformMatrix4fv(this.uniformLocations["modelViewMatrix"], false, camera.modelViewMatrix)
+        gl.uniformMatrix4fv(this.uniformLocations["projectionMatrix"], false, camera.projectionMatrix)
+
+        for(let o in objects) {
+            // object matrix
+            gl.uniformMatrix4fv(this.uniformLocations["modelMatrix"], false, objects[o].modelMatrix)
+
+            // positions
+            gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].positionBuffer)
+            gl.enableVertexAttribArray(this.posLoc, objects[o].positionBuffer)
+            gl.vertexAttribPointer(this.posLoc, 3, gl.FLOAT, false, 0, 0)
+
+            // colors
+            gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].colorBuffer)
+            gl.enableVertexAttribArray(this.colorLoc)
+            gl.vertexAttribPointer(this.colorLoc, 3, gl.FLOAT, false, 0, 0)
+
+            // draw by index order
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[o].indexBuffer)
+            gl.drawElements(gl.TRIANGLES, objects[o].indices.length, gl.UNSIGNED_SHORT, 0)
+        }
     }
 }

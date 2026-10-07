@@ -87,19 +87,19 @@
 
   <!-- Vertex shader -->
   <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
-in vec3 aPosition;
-in vec3 aColor;
+in vec3 position;
+in vec3 color;
 
 uniform float uTime; //time in sec
-uniform mat4 uModelViewMatrix;
-uniform mat4 uProjectionMatrix;
-uniform mat4 uModelMatrix;
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 modelMatrix;
 
 out vec3 vColor;
 
 void main() {
-  gl_Position = uProjectionMatrix * uModelViewMatrix * uModelMatrix * vec4(aPosition,1.0);
-  vColor = aColor;
+  gl_Position = projectionMatrix * modelViewMatrix * modelMatrix * vec4(position,1.0);
+  vColor = color;
 }
 </script>
   <!-- Fragment Shader -->
@@ -118,29 +118,6 @@ void main() {
   <script src="transformations.js"></script>
 
   <script>
-    function createShader(gl, type, source) {
-      let shader = gl.createShader(type);
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        throw new Error(gl.getShaderInfoLog(shader));
-      }
-      return shader;
-    }
-
-    function createProgram(gl, vsSource, fsSource) {
-      let vs = createShader(gl, gl.VERTEX_SHADER, vsSource);
-      let fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
-      let prog = gl.createProgram();
-      gl.attachShader(prog, vs);
-      gl.attachShader(prog, fs);
-      gl.linkProgram(prog);
-      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-        throw new Error(gl.getProgramInfoLog(prog));
-      }
-      return prog;
-    }
-
     // WebGL setup
     const canvas = document.getElementById("glcanvas");
     const gl = canvas.getContext("webgl2");
@@ -151,60 +128,19 @@ void main() {
     vertEditor.value = document.getElementById("vertex-shader").textContent;
     fragEditor.value = document.getElementById("fragment-shader").textContent;
 
-    let program, posLoc, colorLoc, timeLoc, uMVM, uPM, uMTM;
-    let vbo, nbo, ibo;
+    let shader = new Shader(gl, vertEditor.value, fragEditor.value, {"uTime":{type:"float", value:0}})
 
     let objSelector = document.getElementById("objSel")
 
-    let object
-    function loadObject() {
-      let val = objSelector.value
-      if(val === "cube") {
-        object = makeCube(2);
-      } else if(val === "sphere") {
-        object = makeSphere(1, 16);
-      } else if(val === "prism") {
-        object = makePrism(1, 2, 5);
-      }
-      initBuffers();
-    }
-    loadObject();
-    objSelector.onchange = loadObject;
-
-    // Buffers
-    function initBuffers() {
-      if(vbo!==undefined) {
-        gl.deleteBuffer(vbo);
-      }
-      vbo = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-      gl.bufferData(gl.ARRAY_BUFFER, object.positions, gl.STATIC_DRAW);
-
-      if(nbo!==undefined) {
-        gl.deleteBuffer(nbo);
-      }
-      nbo = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, nbo);
-      gl.bufferData(gl.ARRAY_BUFFER, object.colors, gl.STATIC_DRAW);
-
-      if(ibo!==undefined) {
-        gl.deleteBuffer(ibo);
-      }
-      ibo = gl.createBuffer();
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, object.indices, gl.STATIC_DRAW);
-    }
+    let objects = []
+    objects.push(new Object(gl, makeCube(2)))
+    objects.push(new Object(gl, makeSphere(1.5, 16)))
 
     function initShaderProgram() {
       try {
-        program = createProgram(gl, vertEditor.value, fragEditor.value);
-        gl.useProgram(program);
-        posLoc = gl.getAttribLocation(program, "aPosition");
-        colorLoc = gl.getAttribLocation(program, "aColor");
-        timeLoc = gl.getUniformLocation(program, "uTime");
-        uMVM = gl.getUniformLocation(program, "uModelViewMatrix");
-        uPM = gl.getUniformLocation(program, "uProjectionMatrix");
-        uMTM = gl.getUniformLocation(program, "uModelMatrix");
+        shader.vertexShader = vertEditor.value
+        shader.fragmentShader = fragEditor.value
+        shader.initialize(gl)
       } catch (e) { console.error(e); }
     }
     initShaderProgram();
@@ -247,20 +183,14 @@ void main() {
       }
     });
 
-
     // Projection setup
-    let fov = Math.PI / 4, aspect = canvas.width / canvas.height, zNear = 0.1, zFar = 100;
-
+    let fov = Math.PI / 4, aspect = canvas.width / canvas.height, near = 0.1, far = 100;
     let orthoSize = 2.5;
 
-    // Perspective and Orthographic projection
-    let projPerspective = perspective(fov, aspect, zNear, zFar);
-
-    let projOrtho = matMul(
-      box2Cube(-orthoSize * aspect, orthoSize * aspect, -orthoSize, orthoSize, zNear, zFar),
-      flipZ()
-    );
-    let proj = projOrtho;
+    //let camera = new PerspectiveCamera({fov, aspect, near, far});
+    let camera = new OrthographicCamera({orthoSize, aspect, near, far})
+    camera.translation.z = -6
+    camera.updateModelViewMatrix()
 
     let startTime = Date.now();
 
@@ -269,73 +199,16 @@ void main() {
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      // init model transformation matrix as identity matrix
-      let modelMatrix = mat4Identity();
-
-      // object scaling
-      let scaleX = Number(document.getElementById("xScale").value);
-      let scaleY = Number(document.getElementById("yScale").value);
-      let scaleZ = Number(document.getElementById("zScale").value);
-      let S = [scaleX, 0, 0, 0, 0, scaleY, 0, 0, 0, 0, scaleZ, 0, 0, 0, 0, 1];
-      modelMatrix = multiplyMat4(S, modelMatrix);
-
-      // object rotation
-      let cubeRotX = Number(document.getElementById("xRot").value)
-      let cubeRotY = Number(document.getElementById("yRot").value)
-      let cubeRotZ = Number(document.getElementById("zRot").value)
-      let cx = Math.cos(cubeRotY), sx = Math.sin(cubeRotY);
-      let cy = Math.cos(cubeRotX), sy = Math.sin(cubeRotX);
-      let cz = Math.cos(cubeRotZ), sz = Math.sin(cubeRotZ);
-      let rotX = [1, 0, 0, 0, 0, cy, sy, 0, 0, -sy, cy, 0, 0, 0, 0, 1];
-      let rotY = [cx, 0, -sx, 0, 0, 1, 0, 0, sx, 0, cx, 0, 0, 0, 0, 1];
-      let rotZ = [cz, sz, 0, 0, -sz, cz, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-      // cubeRotation = rotZ * rotY * rotX
-      let R = multiplyMat4(rotY, rotX);
-      R = multiplyMat4(rotZ, R);
-
-      modelMatrix = multiplyMat4(R, modelMatrix);
-
-      // translation
-      let posX = Number(document.getElementById("xPos").value);
-      let posY = Number(document.getElementById("yPos").value);
-      let posZ = Number(document.getElementById("zPos").value);
-      let T = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, posX, posY, posZ, 1]
-      modelMatrix = multiplyMat4(T, modelMatrix);
-
-      // init model-view matrix as identity matrix
-      let modelViewMatrix = mat4Identity();
-
-      // delta time in ms
-      let deltaTime = Date.now() - startTime;
-
-      // camera translation
-      modelViewMatrix = mat4Translate(modelViewMatrix, [camX, camY, camZ]);
+      // set uniform delta time
+      shader.uniforms["uTime"].value = (Date.now() - startTime)/1000
       
-      //set time in seconds
-      gl.uniform1f(timeLoc, deltaTime/1000.0);
-      gl.uniformMatrix4fv(uPM, false, proj);
-      gl.uniformMatrix4fv(uMVM, false, modelViewMatrix);
-      gl.uniformMatrix4fv(uMTM, false, modelMatrix);
+      shader.render(gl, objects, camera)
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-      gl.enableVertexAttribArray(posLoc);
-      gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, nbo);
-      gl.enableVertexAttribArray(colorLoc);
-      gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
-
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-
-      // draw the object by the index order
-      gl.drawElements(gl.TRIANGLES, object.indices.length, gl.UNSIGNED_SHORT, 0);
+      requestAnimationFrame(render)
     }
 
     // Initialize when page loads
-    window.onload = function () {
-      setInterval(render, 30);
-    }
-
+    render()
   </script>
 </body>
 
