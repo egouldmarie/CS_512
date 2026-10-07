@@ -15,8 +15,8 @@
       background: #222;
       color: #0f0;
       font: 14px monospace;
-      width: 400px;
-      height: 250px;
+      width: 300px;
+      height: 300px;
     }
 
     input {
@@ -26,61 +26,78 @@
     canvas {
       border: 1px solid #444;
     }
+
+    tr {
+      border: 1px solid white;
+    }
+
+    td {
+      border: 1px solid white;
+      padding: 5px 15px 5px 15px;
+    }
+
+    td:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
   </style>
 </head>
 
 <body>
   <h2>Interactive Controls & Geometric Primitives</h2>
-  <p>Edit vertex and fragment shaders on the left to get the result instantly.<br>
-    Use mouse to drag and rotate the cube. Shift+click and drag to change position.<br>
-    Use arrow keys and w, s keys to move the camera.<br>
-    Save your code to source file if you want to save it.<br>
+  <p>Edit vertex and fragment shaders on the left to get the result instantly.<br/>
+    Use mouse to drag and rotate the cube. Shift+click and drag to change position.<br/>
+    Use arrow keys and w, s keys to move the camera.<br/>
+    Save your code to source file if you want to save it.<br/>
     Press F12 to see the console for debugging.</p>
 
   <div style="display: flex; gap: 10px; align-items: flex-start;">
     <div style="display: flex; flex-direction: column; gap: 10px;">
       <div>
-        <b>Vertex Shader</b><br>
+        <b>Vertex Shader</b><br/>
         <textarea id="vertEditor"></textarea>
       </div>
       <div>
-        <b>Fragment Shader</b><br>
+        <b>Fragment Shader</b><br/>
         <textarea id="fragEditor"></textarea>
       </div>
     </div>
     <div style="display: flex; flex-direction: column; gap: 10px;">
       <div>
-        <b>Controls</b><br><br>
-        <select id="objSel">
-          <option value="cube">Cube</option>
-          <option value="sphere">Sphere</option>
-          <option value="prism">Prism</option>
-        </select>
+        <b>Controls</b><br/>
+        <table>
+            <tr>
+              <td id="seg0" style="color:rgb(255, 115, 206)" onclick="setActiveSegment(0)">Segment A</td>
+              <td id="seg1" style="color:rgb(255, 208, 0)" onclick="setActiveSegment(1)">Segment B</td>
+              <td id="seg2" style="color:rgb(100, 255, 100)" onclick="setActiveSegment(2)">Segment C</td>
+              <td id="seg3" style="color:rgb(48, 176, 255)" onclick="setActiveSegment(3)">Segment D</td>
+              <td id="seg4" style="color:rgb(194, 120, 255)" onclick="setActiveSegment(4)">Segment E</td>
+            </tr>
+        </table>
       </div>
       <div>
         <div style="display: flex; gap: 20px; align-items: flex-start;">
           <div>
             Rotation<br/>
-            X: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="xRot"/></br>
-            Y: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="yRot"/></br>
-            Z: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="zRot"/></br>
+            X: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="xRot" disabled/></br>
+            Y: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="yRot" disabled/></br>
+            Z: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="zRot" disabled/></br>
           </div>
           <div>
             Position<br/>
-            X: <input type="range" min="-2" max="2" step="0.01" value="0" id="xPos"/></br>
-            Y: <input type="range" min="-2" max="2" step="0.01" value="0" id="yPos"/></br>
-            Z: <input type="range" min="-2" max="2" step="0.01" value="0" id="zPos"/></br>
+            X: <input type="range" min="-2" max="2" step="0.01" value="0" id="xPos" disabled /></br>
+            Y: <input type="range" min="-2" max="2" step="0.01" value="0" id="yPos" disabled /></br>
+            Z: <input type="range" min="-2" max="2" step="0.01" value="0" id="zPos" disabled /></br>
           </div>
           <div>
             Scale<br/>
-            X: <input type="range" min="0.1" max="4" step="0.01" value="1" id="xScale"/></br>
-            Y: <input type="range" min="0.1" max="4" step="0.01" value="1" id="yScale"/></br>
-            Z: <input type="range" min="0.1" max="4" step="0.01" value="1" id="zScale"/></br>
+            X: <input type="range" min="1" max="5" step="0.01" value="1" id="xScale" disabled /></br>
+            Y: <input type="range" min="1" max="5" step="0.01" value="1" id="yScale" disabled /></br>
+            Z: <input type="range" min="1" max="5" step="0.01" value="1" id="zScale" disabled /></br>
           </div>
         </div>
       </div>
       <div>
-        <canvas id="glcanvas" width="450" height="450"></canvas>
+        <canvas id="glcanvas" width="500" height="500"></canvas>
       </div>
     </div>
   </div>
@@ -133,8 +150,25 @@ void main() {
     let objSelector = document.getElementById("objSel")
 
     let objects = []
-    objects.push(new Object(gl, makeCube(2)))
-    objects.push(new Object(gl, makeSphere(1.5, 16)))
+    objects.push(new Object(gl, makeSphere(2, 32, [1, 0.451, 0.808]))) // segment A
+    objects.push(new Object(gl, makePrism(1, 5, 16, [1, 0.816, 0]))) // segment B
+    objects.push(new Object(gl, makeSphere(1.5, 16, [0.392, 1, 0.392]))) // segment C
+    objects.push(new Object(gl, makeSphere(1.5, 16, [0.188, 0.690, 1]))) // segment D
+    objects.push(new Object(gl, makeSphere(1.5, 16, [0.761, 0.471, 1]))) // segment E
+
+    let activeObj = objects[0]
+    function setActiveSegment(idx) {
+      activeObj = objects[idx]
+      document.getElementById("xPos").value = activeObj.translation.x;
+      document.getElementById("yPos").value = activeObj.translation.y;
+      document.getElementById("zPos").value = activeObj.translation.z;
+      document.getElementById("xRot").value = activeObj.rotation.x;
+      document.getElementById("yRot").value = activeObj.rotation.y;
+      document.getElementById("zRot").value = activeObj.rotation.z;
+      document.getElementById("xScale").value = activeObj.scale.x;
+      document.getElementById("yScale").value = activeObj.scale.y;
+      document.getElementById("zScale").value = activeObj.scale.z;
+    }
 
     function initShaderProgram() {
       try {
@@ -149,25 +183,32 @@ void main() {
 
     // Mouse and keyboard interactions
     let mouseDown = false, lastX, lastY;
-    let camX = 0, camY = 0, camZ = -6;
 
     canvas.addEventListener('mousedown', e => { mouseDown = true; lastX = e.clientX; lastY = e.clientY; });
     canvas.addEventListener('mouseup', () => mouseDown = false);
     canvas.addEventListener('mousemove', e => {
-      if (!mouseDown) return;
-      let dx = e.clientX - lastX;
-      let dy = e.clientY - lastY;
-      if(e.shiftKey) {
-        let xPos = Math.min(2, Math.max(-2, Number(document.getElementById("xPos").value) + dx * 0.01));
-        let yPos = Math.min(2, Math.max(-2, Number(document.getElementById("yPos").value) - dy * 0.01));
-        document.getElementById("yPos").value = yPos;
-        document.getElementById("xPos").value = xPos;
-      } else {
-        let xRot = (Number(document.getElementById("xRot").value) + dy * 0.01) % (2*Math.PI);
-        let yRot = (Number(document.getElementById("yRot").value) + dx * 0.01) % (2*Math.PI);
-        document.getElementById("yRot").value = yRot < 0 ? 2*Math.PI + yRot : yRot;
-        document.getElementById("xRot").value = xRot < 0 ? 2*Math.PI + xRot : xRot;
-      }
+      if (!mouseDown || !activeObj) return;
+        let dx = e.clientX - lastX;
+        let dy = e.clientY - lastY;
+        if(e.shiftKey) {
+          let xPos = Math.min(2, Math.max(-2, Number(document.getElementById("xPos").value) + dx * 0.01));
+          let yPos = Math.min(2, Math.max(-2, Number(document.getElementById("yPos").value) - dy * 0.01));
+          document.getElementById("xPos").value = xPos;
+          document.getElementById("yPos").value = yPos;
+          activeObj.translation.x = xPos
+          activeObj.translation.y = yPos
+          activeObj.updateMatrix()
+        } else {
+          let xRot = (Number(document.getElementById("xRot").value) + dy * 0.01) % (2*Math.PI);
+          let yRot = (Number(document.getElementById("yRot").value) + dx * 0.01) % (2*Math.PI);
+          xRot = xRot < 0 ? 2*Math.PI + xRot : xRot;
+          yRot = yRot < 0 ? 2*Math.PI + yRot : yRot;
+          document.getElementById("xRot").value = xRot;
+          document.getElementById("yRot").value = yRot;
+          activeObj.rotation.x = xRot
+          activeObj.rotation.y = yRot
+          activeObj.updateMatrix()
+        }
       lastX = e.clientX; lastY = e.clientY;
     });
 

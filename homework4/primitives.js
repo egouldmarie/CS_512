@@ -57,7 +57,7 @@ function makeCube(d) {
 }
 
 // sphere
-function makeSphere(radius, resolution) {
+function makeSphere(radius, resolution, color) {
     radius = Math.max(radius, 0)
     let wResolution = Math.floor(Math.min(64, Math.max(4, resolution)))
     let hResolution = Math.floor(wResolution / 2)
@@ -75,7 +75,11 @@ function makeSphere(radius, resolution) {
                 y = radius * Math.cos(phi) * Math.sin(theta),
                 z = radius * Math.sin(phi)
             pos.push(x, y, z)
-            col.push(i / wResolution, j / hResolution, 0)
+            if (color) {
+                col.push(...color)
+            } else {
+                col.push(i / wResolution, j / hResolution, 0)
+            }
             if (j > 1) {
                 if (i > 0) {
                     let idx0 = (j - 2) * wResolution + i - 1,
@@ -99,7 +103,11 @@ function makeSphere(radius, resolution) {
 
     // bottom of sphere
     pos.push(0, 0, -radius)
-    col.push(0.5, 0, 0)
+    if (color) {
+        col.push(...color)
+    } else {
+        col.push(0.5, 0, 0)
+    }
     let idx2 = (pos.length - 1) / 3
     for (let i = 0; i < wResolution; i++) {
         if (i > 0) {
@@ -116,7 +124,11 @@ function makeSphere(radius, resolution) {
 
     // top of sphere
     pos.push(0, 0, radius)
-    col.push(1, 1, 0)
+    if (color) {
+        col.push(...color)
+    } else {
+        col.push(1, 1, 0)
+    }
     idx2 = (pos.length - 1) / 3
     for (let i = 0; i < wResolution; i++) {
         if (i > 0) {
@@ -139,7 +151,7 @@ function makeSphere(radius, resolution) {
 }
 
 // prism
-function makePrism(radius, height, sides) {
+function makePrism(radius, height, sides, color) {
     sides = Math.floor(Math.max(3, sides))
 
     let pos = [],
@@ -152,7 +164,11 @@ function makePrism(radius, height, sides) {
             let x = radius * Math.cos(theta),
                 y = radius * Math.sin(theta)
             pos.push(x, y, z)
-            col.push(i / sides, j, 0)
+            if (color) {
+                col.push(...color)
+            } else {
+                col.push(i / sides, j, 0)
+            }
             if (j > 0) {
                 if (i > 0) {
                     let idx0 = (j - 1) * sides + i - 1,
@@ -177,7 +193,11 @@ function makePrism(radius, height, sides) {
     if (sides > 3) {
         // center bottom
         pos.push(0, 0, -height / 2)
-        col.push(0.5, 0, 0)
+        if (color) {
+            col.push(...color)
+        } else {
+            col.push(0.5, 0, 0)
+        }
 
         let idx2 = (pos.length - 1) / 3
         for (let i = 0; i < sides; i++) {
@@ -195,7 +215,11 @@ function makePrism(radius, height, sides) {
 
         // center top
         pos.push(0, 0, height / 2)
-        col.push(0.5, 1, 0)
+        if (color) {
+            col.push(...color)
+        } else {
+            col.push(0.5, 1, 0)
+        }
 
         idx2 = (pos.length - 1) / 3
         for (let i = 0; i < sides; i++) {
