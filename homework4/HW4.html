@@ -171,26 +171,27 @@ void main() {
       lastX = e.clientX; lastY = e.clientY;
     });
 
-    document.addEventListener('keydown', e => {
-      const step = 0.2;
-      switch (e.key) {
-        case 'ArrowUp': camY -= step; break;
-        case 'ArrowDown': camY += step; break;
-        case 'ArrowLeft': camX += step; break;
-        case 'ArrowRight': camX -= step; break;
-        case 'w': camZ += step; break;
-        case 's': camZ -= step; break;
-      }
-    });
-
     // Projection setup
     let fov = Math.PI / 4, aspect = canvas.width / canvas.height, near = 0.1, far = 100;
     let orthoSize = 2.5;
 
-    //let camera = new PerspectiveCamera({fov, aspect, near, far});
-    let camera = new OrthographicCamera({orthoSize, aspect, near, far})
+    let camera = new PerspectiveCamera({fov, aspect, near, far});
+    //let camera = new OrthographicCamera({orthoSize, aspect, near, far})
     camera.translation.z = -6
     camera.updateModelViewMatrix()
+
+    document.addEventListener('keydown', e => {
+      const step = 0.2;
+      switch (e.code) {
+        case 'ArrowUp': camera.translation.y -= step; break;
+        case 'ArrowDown': camera.translation.y += step; break;
+        case 'ArrowLeft': camera.translation.x += step; break;
+        case 'ArrowRight': camera.translation.x -= step; break;
+        case 'KeyW': camera.translation.z += step; break;
+        case 'KeyS': camera.translation.z -= step; break;
+      }
+      camera.updateModelViewMatrix()
+    });
 
     let startTime = Date.now();
 
