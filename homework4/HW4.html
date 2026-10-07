@@ -82,15 +82,15 @@
           </div>
           <div>
             Position<br/>
-            X: <input type="range" min="-20" max="20" step="0.01" value="0" id="xPos" oninput="updateObj()" disabled/></br>
-            Y: <input type="range" min="-20" max="20" step="0.01" value="0" id="yPos" oninput="updateObj()" disabled/></br>
-            Z: <input type="range" min="-20" max="20" step="0.01" value="0" id="zPos" oninput="updateObj()" disabled/></br>
+            X: <input type="range" min="-20" max="20" step="0.01" value="0" id="xPos" oninput="updateObj()"/></br>
+            Y: <input type="range" min="-20" max="20" step="0.01" value="0" id="yPos" oninput="updateObj()"/></br>
+            Z: <input type="range" min="-20" max="20" step="0.01" value="0" id="zPos" oninput="updateObj()"/></br>
           </div>
           <div>
             Scale<br/>
-            X: <input type="range" min="1" max="5" step="0.01" value="1" id="xScale" oninput="updateObj()" disabled/></br>
-            Y: <input type="range" min="1" max="5" step="0.01" value="1" id="yScale" oninput="updateObj()" disabled/></br>
-            Z: <input type="range" min="1" max="5" step="0.01" value="1" id="zScale" oninput="updateObj()" disabled/></br>
+            X: <input type="range" min="1" max="5" step="0.01" value="1" id="xScale" oninput="updateObj()"/></br>
+            Y: <input type="range" min="1" max="5" step="0.01" value="1" id="yScale" oninput="updateObj()"/></br>
+            Z: <input type="range" min="1" max="5" step="0.01" value="1" id="zScale" oninput="updateObj()"/></br>
           </div>
         </div>
       </div>
@@ -233,15 +233,15 @@ void main() {
     setActiveSegment(activeIdx)
 
     function updateObj() {
-      //activeObj.translation.x = Number(document.getElementById("xPos").value)
-      //activeObj.translation.y = Number(document.getElementById("yPos").value)
-      //activeObj.translation.z = Number(document.getElementById("zPos").value)
+      activeObj.translation.x = Number(document.getElementById("xPos").value)
+      activeObj.translation.y = Number(document.getElementById("yPos").value)
+      activeObj.translation.z = Number(document.getElementById("zPos").value)
       activeObj.rotation.x = Number(document.getElementById("xRot").value)
       activeObj.rotation.y = Number(document.getElementById("yRot").value)
       activeObj.rotation.z = Number(document.getElementById("zRot").value)
-      //activeObj.scale.x = Number(document.getElementById("xScale").value)
-      //activeObj.scale.y = Number(document.getElementById("yScale").value)
-      //activeObj.scale.z = Number(document.getElementById("zScale").value)
+      activeObj.scale.x = Number(document.getElementById("xScale").value)
+      activeObj.scale.y = Number(document.getElementById("yScale").value)
+      activeObj.scale.z = Number(document.getElementById("zScale").value)
       activeObj.updateMatrix()
     }
 
@@ -266,13 +266,13 @@ void main() {
         let dx = e.clientX - lastX;
         let dy = e.clientY - lastY;
         if(e.shiftKey) {
-          /*let xPos = Math.min(20, Math.max(-20, Number(document.getElementById("xPos").value) + dx * 0.01));
+          let xPos = Math.min(20, Math.max(-20, Number(document.getElementById("xPos").value) + dx * 0.01));
           let yPos = Math.min(20, Math.max(-20, Number(document.getElementById("yPos").value) - dy * 0.01));
           document.getElementById("xPos").value = xPos;
           document.getElementById("yPos").value = yPos;
           activeObj.translation.x = xPos
           activeObj.translation.y = yPos
-          activeObj.updateMatrix()*/
+          activeObj.updateMatrix()
         } else {
           let xRot = (Number(document.getElementById("xRot").value) + dy * 0.01) % (2*Math.PI);
           let yRot = (Number(document.getElementById("yRot").value) + dx * 0.01) % (2*Math.PI);
