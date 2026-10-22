@@ -334,13 +334,18 @@ class Shader {
 
             // positions
             gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].positionBuffer)
-            gl.enableVertexAttribArray(this.posLoc, objects[o].positionBuffer)
+            gl.enableVertexAttribArray(this.posLoc)
             gl.vertexAttribPointer(this.posLoc, 3, gl.FLOAT, false, 0, 0)
 
             // colors
             gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].colorBuffer)
             gl.enableVertexAttribArray(this.colorLoc)
             gl.vertexAttribPointer(this.colorLoc, 3, gl.FLOAT, false, 0, 0)
+
+            // normals
+            gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].normalBuffer)
+            gl.enableVertexAttribArray(this.normLoc)
+            gl.vertexAttribPointer(this.normLoc, 3, gl.FLOAT, false, 0, 0)
 
             if(objects[o].indices) {
                 // draw by index order

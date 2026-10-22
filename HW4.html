@@ -103,6 +103,7 @@
   <!-- Vertex shader -->
   <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
 in vec3 position;
+in vec3 normal;
 in vec3 color;
 
 uniform float uTime; //time in sec
@@ -111,21 +112,24 @@ uniform mat4 projectionMatrix;
 uniform mat4 modelMatrix;
 
 out vec3 vColor;
+out vec3 vNormal;
 
 void main() {
-  gl_Position = projectionMatrix * modelViewMatrix * modelMatrix * vec4(position,1.0);
+  gl_Position = projectionMatrix * modelViewMatrix * modelMatrix * vec4(position, 1.0);
   vColor = color;
+  vNormal = mat3(modelMatrix) * normal;
 }
 </script>
   <!-- Fragment Shader -->
   <script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
 precision mediump float;
 in vec3 vColor;
+in vec3 vNormal;
 
 out vec4 fragColor;
 
 void main() {
-  fragColor = vec4(vColor,1.0);
+  fragColor = vec4(vNormal, 1.0);
 }
 </script>
   <script src="utils/classes.js"></script>
@@ -151,20 +155,24 @@ void main() {
       document.getElementById("segC"),
       document.getElementById("segD"),
       document.getElementById("segE")
-  ]
+    ]
 
     let segmentA = new Object(gl, makeSphere(2, 32, [1, 0.451, 0.808]))
     segmentA.name = "Segment A"
 
     let pntsB = makePrism(1, 5, 32, [1, 0.816, 0])
     let cx = Math.cos(Math.PI/2),
-            sx = Math.sin(Math.PI/2)
+        sx = Math.sin(Math.PI/2)
     for(let i=0; i<pntsB.positions.length/3; i++) {
+      let ny = pntsB.normals[i*3+1]
+      let nz = pntsB.normals[i*3+2]
       let y = pntsB.positions[i*3+1]
       let z = pntsB.positions[i*3+2]
 
       pntsB.positions[i*3+1] = cx*y - sx*z + 2.5
       pntsB.positions[i*3+2] = sx*y + cx*z
+      pntsB.normals[i*3+1] = cx*ny - sx*nz
+      pntsB.normals[i*3+2] = sx*ny + cx*nz
     }
     let segmentB = new Object(gl, pntsB)
     segmentB.name = "Segment B"
@@ -174,11 +182,15 @@ void main() {
 
     let pntsC = makePrism(0.75, 6, 32, [0.392, 1, 0.392])
     for(let i=0; i<pntsC.positions.length/3; i++) {
+      let ny = pntsC.normals[i*3+1]
+      let nz = pntsC.normals[i*3+2]
       let y = pntsC.positions[i*3+1]
       let z = pntsC.positions[i*3+2]
 
-      pntsC.positions[i*3+1] = cx*y - sx*z + 3
+      pntsC.positions[i*3+1] = cx*y - sx*z + 2.5
       pntsC.positions[i*3+2] = sx*y + cx*z
+      pntsC.normals[i*3+1] = cx*ny - sx*nz
+      pntsC.normals[i*3+2] = sx*ny + cx*nz
     }
     let segmentC = new Object(gl, pntsC)
     segmentC.name = "Segment C"
@@ -188,11 +200,15 @@ void main() {
 
     let pntsD = makePrism(0.75, 6, 32, [0.188, 0.690, 1])
     for(let i=0; i<pntsD.positions.length/3; i++) {
+      let ny = pntsD.normals[i*3+1]
+      let nz = pntsD.normals[i*3+2]
       let y = pntsD.positions[i*3+1]
       let z = pntsD.positions[i*3+2]
 
-      pntsD.positions[i*3+1] = cx*y - sx*z + 3
+      pntsD.positions[i*3+1] = cx*y - sx*z + 2.5
       pntsD.positions[i*3+2] = sx*y + cx*z
+      pntsD.normals[i*3+1] = cx*ny - sx*nz
+      pntsD.normals[i*3+2] = sx*ny + cx*nz
     }
     let segmentD = new Object(gl, pntsD)
     segmentD.name = "Segment D"

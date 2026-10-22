@@ -3,37 +3,21 @@
 function makeCube(d) {
     const positions = new Float32Array([
         // 0
-        -d / 2,
-        -d / 2,
-        -d / 2,
+        -d / 2, -d / 2, -d / 2,
         // 1
-        d / 2,
-        -d / 2,
-        -d / 2,
+        d / 2, -d / 2, -d / 2,
         // 2
-        d / 2,
-        d / 2,
-        -d / 2,
+        d / 2, d / 2, -d / 2,
         // 3
-        -d / 2,
-        d / 2,
-        -d / 2,
+        -d / 2, d / 2, -d / 2,
         // 4
-        -d / 2,
-        -d / 2,
-        d / 2,
+        -d / 2, -d / 2, d / 2,
         // 5
-        d / 2,
-        -d / 2,
-        d / 2,
+        d / 2, -d / 2, d / 2,
         // 6
-        d / 2,
-        d / 2,
-        d / 2,
+        d / 2, d / 2, d / 2,
         // 7
-        -d / 2,
-        d / 2,
-        d / 2
+        -d / 2, d / 2, d / 2
     ])
     const indices = new Uint16Array([
         // Front
@@ -52,18 +36,22 @@ function makeCube(d) {
     const colors = new Float32Array([
         1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1
     ])
+    /*const normals = new Float32Array([
+        0, 0, -1,
+    ])*/
 
     return { positions, indices, colors }
 }
 
 // sphere
-function makeSphere(radius, resolution, color) {
+function makeSphere(radius, resolution, color=[1, 1, 1]) {
     radius = Math.max(radius, 0)
     let wResolution = Math.floor(Math.min(64, Math.max(4, resolution)))
     let hResolution = Math.floor(wResolution / 2)
     let pos = [],
         ind = [],
-        col = []
+        col = [],
+        nrm = []
     let delPhi = Math.PI / hResolution
     let delTheta = (2 * Math.PI) / wResolution
     for (let j = 1; j < hResolution; j++) {
@@ -71,10 +59,11 @@ function makeSphere(radius, resolution, color) {
         // middle of sphere
         for (let i = 0; i < wResolution; i++) {
             let theta = i * delTheta
-            let x = radius * Math.cos(phi) * Math.cos(theta),
-                y = radius * Math.cos(phi) * Math.sin(theta),
-                z = radius * Math.sin(phi)
-            pos.push(x, y, z)
+            let x = Math.cos(phi) * Math.cos(theta),
+                y = Math.cos(phi) * Math.sin(theta),
+                z = Math.sin(phi)
+            nrm.push(x, y, z)
+            pos.push(radius*x, radius*y, radius*z)
             if (color) {
                 col.push(...color)
             } else {
@@ -103,6 +92,7 @@ function makeSphere(radius, resolution, color) {
 
     // bottom of sphere
     pos.push(0, 0, -radius)
+    nrm.push(0, 0, -1)
     if (color) {
         col.push(...color)
     } else {
@@ -124,6 +114,7 @@ function makeSphere(radius, resolution, color) {
 
     // top of sphere
     pos.push(0, 0, radius)
+    nrm.push(0, 0, 1)
     if (color) {
         col.push(...color)
     } else {
@@ -145,9 +136,10 @@ function makeSphere(radius, resolution, color) {
 
     const positions = new Float32Array(pos)
     const indices = new Uint16Array(ind)
+    const normals = new Float32Array(nrm)
     const colors = new Float32Array(col)
 
-    return { positions, indices, colors }
+    return { positions, indices, normals, colors }
 }
 
 // prism
@@ -156,14 +148,16 @@ function makePrism(radius, height, sides, color) {
 
     let pos = [],
         ind = [],
-        col = []
+        col = [],
+        nrm = []
     for (let j = 0; j <= 1; j++) {
         let z = -height / 2 + j * height
         for (let i = 0; i < sides; i++) {
             let theta = i * ((2 * Math.PI) / sides)
-            let x = radius * Math.cos(theta),
-                y = radius * Math.sin(theta)
-            pos.push(x, y, z)
+            let x = Math.cos(theta),
+                y = Math.sin(theta)
+            nrm.push(x, y, 0)
+            pos.push(radius*x, radius*y, z)
             if (color) {
                 col.push(...color)
             } else {
@@ -193,6 +187,7 @@ function makePrism(radius, height, sides, color) {
     if (sides > 3) {
         // center bottom
         pos.push(0, 0, -height / 2)
+        nrm.push(0, 0, -1)
         if (color) {
             col.push(...color)
         } else {
@@ -215,6 +210,7 @@ function makePrism(radius, height, sides, color) {
 
         // center top
         pos.push(0, 0, height / 2)
+        nrm.push(0, 0, 1)
         if (color) {
             col.push(...color)
         } else {
@@ -242,8 +238,9 @@ function makePrism(radius, height, sides, color) {
     }
 
     const positions = new Float32Array(pos)
+    const normals = new Float32Array(nrm)
     const indices = new Uint16Array(ind)
     const colors = new Float32Array(col)
 
-    return { positions, indices, colors }
+    return { positions, indices, normals, colors }
 }
