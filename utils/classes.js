@@ -210,10 +210,11 @@ class PerspectiveCamera {
 }
 
 class Shader {
-    constructor(gl, vertexShader, fragmentShader, uniforms = {}) {
+    constructor(gl, vertexShader, fragmentShader, uniforms = {}, options = {}) {
         this.vertexShader = vertexShader
         this.fragmentShader = fragmentShader
         this.uniforms = uniforms
+        this.mode = options.mode || gl.TRIANGLES
 
         this.initialize(gl)
     }
@@ -320,14 +321,18 @@ class Shader {
             gl.enableVertexAttribArray(this.colorLoc)
             gl.vertexAttribPointer(this.colorLoc, 3, gl.FLOAT, false, 0, 0)
 
-            // draw by index order
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[o].indexBuffer)
-            gl.drawElements(
-                gl.TRIANGLES,
-                objects[o].indices.length,
-                gl.UNSIGNED_SHORT,
-                0
-            )
+            if(objects[o].indices) {
+                // draw by index order
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[o].indexBuffer)
+                gl.drawElements(
+                    this.mode,
+                    objects[o].indices.length,
+                    gl.UNSIGNED_SHORT,
+                    0
+                )
+            } else {
+                gl.drawArrays(this.mode, 0, objects[o].positions.length)
+            }
         }
     }
 }
