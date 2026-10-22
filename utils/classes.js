@@ -1,8 +1,7 @@
-class Object {
-    constructor(gl, { positions, colors, indices }) {
-        this.positions = positions
-        this.colors = colors
-        this.indices = indices
+class Node {
+    constructor() {
+        this.parent = undefined
+        this.children = []
 
         this.children = []
         this.parent = undefined
@@ -13,36 +12,20 @@ class Object {
         this.scale = { x: 1, y: 1, z: 1 }
         this.translation = { x: 0, y: 0, z: 0 }
         this.rotation = { x: 0, y: 0, z: 0 }
-
-        this.initBuffers(gl)
     }
 
-    initBuffers(gl) {
-        this.positionBuffer = gl.createBuffer()
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, this.positions, gl.STATIC_DRAW)
-
-        this.colorBuffer = gl.createBuffer()
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW)
-
-        this.indexBuffer = gl.createBuffer()
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW)
-    }
-
-    add(object) {
-        if (object.parent) {
+    add(node) {
+        if (node.parent) {
             throw new Error(
-                "Cannot add object, object already has a parent.",
+                "Cannot add node, node already has a parent.",
                 this,
-                object
+                node
             )
         }
-        if (!this.children.includes(object)) {
-            this.children.push(object)
-            object.parent = this
-            object.updateModelMatrix()
+        if (!this.children.includes(node)) {
+            this.children.push(node)
+            node.parent = this
+            node.updateModelMatrix()
         }
     }
 
@@ -93,7 +76,7 @@ class Object {
     }
 
     updateModelMatrix() {
-        // update this object with respect to its parent's reference frame
+        // update this node with respect to its parent's reference frame
         if (this.parent) {
             this.modelMatrix = multiplyMat4(
                 this.parent.modelMatrix,
@@ -103,9 +86,47 @@ class Object {
             this.modelMatrix = [...this.matrix]
         }
 
-        // update this object's childrens' reference frames
+        // update this node's childrens' reference frames
         for (let i in this.children) {
             this.children[i].updateModelMatrix()
+        }
+    }
+}
+
+class Object extends Node {
+    constructor(gl, { colors, indices, normals, positions }) {
+        super()
+
+        this.colors = colors
+        this.indices = indices
+        this.normals = normals
+        this.positions = positions
+
+        this.children = []
+        this.parent = undefined
+
+        this.initBuffers(gl)
+    }
+
+    initBuffers(gl) {
+        this.positionBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, this.positions, gl.STATIC_DRAW)
+
+        this.colorBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW)
+
+        if (this.normals) {
+            this.normalBuffer = gl.createBuffer()
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, this.normals, gl.STATIC_DRAW)
+        }
+
+        if (this.indices) {
+            this.indexBuffer = gl.createBuffer()
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW)
         }
     }
 }
