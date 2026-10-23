@@ -6,8 +6,11 @@
   <title>UNM CS 412/512 HW4</title>
   <style>
     body {
-      background: #111;
       color: #ccc;
+      width: calc(100vw - 20px);
+      height: calc(100vh - 30px);
+      margin: 10px;
+      background: #111;
       font-family: monospace;
     }
 
@@ -16,7 +19,7 @@
       color: #0f0;
       font: 14px monospace;
       width: 300px;
-      height: 300px;
+      height: calc((100vh - 170px)/2);
     }
 
     input {
@@ -24,7 +27,12 @@
     }
 
     canvas {
+      width: 100%;
       border: 1px solid #444;
+    }
+
+    table {
+      width: 100%;
     }
 
     tr {
@@ -42,7 +50,7 @@
   </style>
 </head>
 
-<body>
+<body onresize="onresize()">
   <h2>Lighting and Shading</h2>
   <div></div>
   <p>Edit vertex and fragment shaders on the left to get the result instantly. Use mouse to drag and rotate the<br/>
@@ -59,8 +67,8 @@
         <textarea id="fragEditor"></textarea>
       </div>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 10px;">
-      <div>
+    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      <div style="width: 100%;">
         <b>Controls</b><br/>
         <table>
             <tr>
@@ -73,7 +81,7 @@
         </table>
       </div>
       <div>
-        <div style="display: flex; gap: 20px; align-items: flex-start;">
+        <div style="display: flex; gap: 20px; align-items: flex-start; justify-content: space-around;">
           <div>
             Rotation<br/>
             X: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="xRot" oninput="updateObj()"/></br>
@@ -94,8 +102,8 @@
           </div>
         </div>
       </div>
-      <div>
-        <canvas id="glcanvas" width="510" height="510"></canvas>
+      <div id="glcanvas-container" style="height:calc(100vh - 260px);">
+        <canvas id="glcanvas"></canvas>
       </div>
     </div>
   </div>
@@ -140,6 +148,7 @@ void main() {
   <script>
     // WebGL setup
     const canvas = document.getElementById("glcanvas");
+    const container = document.getElementById("glcanvas-container")
     const gl = canvas.getContext("webgl2");
     if (!gl) alert("WebGL2 not supported");
 
@@ -313,6 +322,14 @@ void main() {
     camera.translation.z = -50
     camera.updateModelViewMatrix()
 
+    let onresize = () => {
+      canvas.width = container.clientWidth
+      canvas.height = container.clientHeight
+      camera.aspect = container.clientWidth / container.clientHeight
+      camera.updateProjectionMatrix()
+    }
+    onresize()
+
     document.addEventListener('keydown', e => {
       const step = 0.2;
       switch (e.code) {
@@ -329,6 +346,8 @@ void main() {
     let startTime = Date.now();
 
     function render() {
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+
       gl.enable(gl.DEPTH_TEST);
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
