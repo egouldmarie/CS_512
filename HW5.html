@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>UNM CS 412/512 HW4</title>
+  <style>
+    body {
+      background: #111;
+      color: #ccc;
+      font-family: monospace;
+    }
+
+    textarea {
+      background: #222;
+      color: #0f0;
+      font: 14px monospace;
+      width: 300px;
+      height: 300px;
+    }
+
+    input {
+      width: 130px;
+    }
+
+    canvas {
+      border: 1px solid #444;
+    }
+
+    tr {
+      border: 1px solid white;
+    }
+
+    td {
+      border: 1px solid white;
+      padding: 5px 14px 5px 14px;
+    }
+
+    td:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Lighting and Shading</h2>
+  <div></div>
+  <p>Edit vertex and fragment shaders on the left to get the result instantly. Use mouse to drag and rotate the<br/>
+    selected object. Shift+click and drag to change position. Use arrow keys and w, s keys to move the camera.<br/>
+
+  <div style="display: flex; gap: 10px; align-items: flex-start;">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div>
+        <b>Vertex Shader</b><br/>
+        <textarea id="vertEditor"></textarea>
+      </div>
+      <div>
+        <b>Fragment Shader</b><br/>
+        <textarea id="fragEditor"></textarea>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div>
+        <b>Controls</b><br/>
+        <table>
+            <tr>
+              <td id="segA" style="color:rgb(255, 115, 206)" onclick="setActiveSegment(0)">Segment A</td>
+              <td id="segB" style="color:rgb(255, 208, 0)" onclick="setActiveSegment(1)">Segment B</td>
+              <td id="segC" style="color:rgb(100, 255, 100)" onclick="setActiveSegment(2)">Segment C</td>
+              <td id="segD" style="color:rgb(48, 176, 255)" onclick="setActiveSegment(3)">Segment D</td>
+              <td id="segE" style="color:rgb(194, 120, 255)" onclick="setActiveSegment(4)">Segment E</td>
+            </tr>
+        </table>
+      </div>
+      <div>
+        <div style="display: flex; gap: 20px; align-items: flex-start;">
+          <div>
+            Rotation<br/>
+            X: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="xRot" oninput="updateObj()"/></br>
+            Y: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="yRot" oninput="updateObj()"/></br>
+            Z: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="zRot" oninput="updateObj()"/></br>
+          </div>
+          <div>
+            Position<br/>
+            X: <input type="range" min="-20" max="20" step="0.01" value="0" id="xPos" oninput="updateObj()"/></br>
+            Y: <input type="range" min="-20" max="20" step="0.01" value="0" id="yPos" oninput="updateObj()"/></br>
+            Z: <input type="range" min="-20" max="20" step="0.01" value="0" id="zPos" oninput="updateObj()"/></br>
+          </div>
+          <div>
+            Material Properties<br/>
+            X: <input type="range" min="1" max="5" step="0.01" value="1" id="xScale" oninput="updateObj()"/></br>
+            Y: <input type="range" min="1" max="5" step="0.01" value="1" id="yScale" oninput="updateObj()"/></br>
+            Z: <input type="range" min="1" max="5" step="0.01" value="1" id="zScale" oninput="updateObj()"/></br>
+          </div>
+        </div>
+      </div>
+      <div>
+        <canvas id="glcanvas" width="510" height="510"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vertex shader -->
+  <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
+in vec3 position;
+in vec3 normal;
+in vec3 color;
+
+uniform float uTime; //time in sec
+uniform mat4 modelViewMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 normalMatrix;
+uniform mat4 modelMatrix;
+
+out vec3 vColor;
+out vec3 vNormal;
+
+void main() {
+  gl_Position = projectionMatrix * modelViewMatrix * modelMatrix * vec4(position, 1.0);
+  vColor = color;
+  vNormal = mat3(normalMatrix) * normal;
+}
+</script>
+  <!-- Fragment Shader -->
+  <script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
+precision mediump float;
+in vec3 vColor;
+in vec3 vNormal;
+
+out vec4 fragColor;
+
+void main() {
+  fragColor = vec4(0.5*vNormal+vec3(0.5), 1.0);
+}
+</script>
+  <script src="utils/classes.js"></script>
+  <script src="utils/primitives.js"></script>
+  <script src="utils/transformations.js"></script>
+
+  <script>
+    // WebGL setup
+    const canvas = document.getElementById("glcanvas");
+    const gl = canvas.getContext("webgl2");
+    if (!gl) alert("WebGL2 not supported");
+
+    let vertEditor = document.getElementById("vertEditor");
+    let fragEditor = document.getElementById("fragEditor");
+    vertEditor.value = document.getElementById("vertex-shader").textContent;
+    fragEditor.value = document.getElementById("fragment-shader").textContent;
+
+    let shader = new Shader(gl, vertEditor.value, fragEditor.value, {"uTime":{type:"float", value:0}})
+
+    let objSelectors = [
+      document.getElementById("segA"),
+      document.getElementById("segB"),
+      document.getElementById("segC"),
+      document.getElementById("segD"),
+      document.getElementById("segE")
+    ]
+
+    let segmentA = new Object(gl, makeSphere(2, 32, [1, 0.451, 0.808]))
+    segmentA.name = "Segment A"
+
+    let pntsB = makePrism(1, 5, 32, [1, 0.816, 0])
+    let cx = Math.cos(Math.PI/2),
+        sx = Math.sin(Math.PI/2)
+    for(let i=0; i<pntsB.positions.length/3; i++) {
+      let ny = pntsB.normals[i*3+1]
+      let nz = pntsB.normals[i*3+2]
+      let y = pntsB.positions[i*3+1]
+      let z = pntsB.positions[i*3+2]
+
+      pntsB.positions[i*3+1] = cx*y - sx*z + 2.5
+      pntsB.positions[i*3+2] = sx*y + cx*z
+      pntsB.normals[i*3+1] = cx*ny - sx*nz
+      pntsB.normals[i*3+2] = sx*ny + cx*nz
+    }
+    let segmentB = new Object(gl, pntsB)
+    segmentB.name = "Segment B"
+    segmentB.translation.y = 2
+    segmentB.updateMatrix()
+    segmentA.add(segmentB)
+
+    let pntsC = makePrism(0.75, 6, 32, [0.392, 1, 0.392])
+    for(let i=0; i<pntsC.positions.length/3; i++) {
+      let ny = pntsC.normals[i*3+1]
+      let nz = pntsC.normals[i*3+2]
+      let y = pntsC.positions[i*3+1]
+      let z = pntsC.positions[i*3+2]
+
+      pntsC.positions[i*3+1] = cx*y - sx*z + 2.5
+      pntsC.positions[i*3+2] = sx*y + cx*z
+      pntsC.normals[i*3+1] = cx*ny - sx*nz
+      pntsC.normals[i*3+2] = sx*ny + cx*nz
+    }
+    let segmentC = new Object(gl, pntsC)
+    segmentC.name = "Segment C"
+    segmentC.translation.y = 5
+    segmentC.updateMatrix()
+    segmentB.add(segmentC)
+
+    let pntsD = makePrism(0.75, 6, 32, [0.188, 0.690, 1])
+    for(let i=0; i<pntsD.positions.length/3; i++) {
+      let ny = pntsD.normals[i*3+1]
+      let nz = pntsD.normals[i*3+2]
+      let y = pntsD.positions[i*3+1]
+      let z = pntsD.positions[i*3+2]
+
+      pntsD.positions[i*3+1] = cx*y - sx*z + 2.5
+      pntsD.positions[i*3+2] = sx*y + cx*z
+      pntsD.normals[i*3+1] = cx*ny - sx*nz
+      pntsD.normals[i*3+2] = sx*ny + cx*nz
+    }
+    let segmentD = new Object(gl, pntsD)
+    segmentD.name = "Segment D"
+    segmentD.translation.y = 6
+    segmentD.updateMatrix()
+    segmentC.add(segmentD)
+    let segmentE = new Object(gl, makeSphere(1.5, 16, [0.761, 0.471, 1]))
+    segmentE.name = "SegmentE"
+    segmentE.translation.y = 7.5
+    segmentE.scale.z = 0.25
+    segmentE.updateMatrix()
+    segmentD.add(segmentE)
+    let objects = [
+      segmentA,
+      segmentB,
+      segmentC,
+      segmentD,
+      segmentE,
+    ]
+
+    let activeObj
+    let activeIdx = 0
+    function setActiveSegment(idx) {
+      objSelectors[activeIdx].style.backgroundColor = ""
+      activeIdx = idx
+      activeObj = objects[idx]
+      objSelectors[activeIdx].style.backgroundColor = "#444444"
+      document.getElementById("xPos").value = activeObj.translation.x;
+      document.getElementById("yPos").value = activeObj.translation.y;
+      document.getElementById("zPos").value = activeObj.translation.z;
+      document.getElementById("xRot").value = activeObj.rotation.x;
+      document.getElementById("yRot").value = activeObj.rotation.y;
+      document.getElementById("zRot").value = activeObj.rotation.z;
+      document.getElementById("xScale").value = activeObj.scale.x;
+      document.getElementById("yScale").value = activeObj.scale.y;
+      document.getElementById("zScale").value = activeObj.scale.z;
+    }
+    setActiveSegment(activeIdx)
+
+    function updateObj() {
+      activeObj.translation.x = Number(document.getElementById("xPos").value)
+      activeObj.translation.y = Number(document.getElementById("yPos").value)
+      activeObj.translation.z = Number(document.getElementById("zPos").value)
+      activeObj.rotation.x = Number(document.getElementById("xRot").value)
+      activeObj.rotation.y = Number(document.getElementById("yRot").value)
+      activeObj.rotation.z = Number(document.getElementById("zRot").value)
+      activeObj.scale.x = Number(document.getElementById("xScale").value)
+      activeObj.scale.y = Number(document.getElementById("yScale").value)
+      activeObj.scale.z = Number(document.getElementById("zScale").value)
+      activeObj.updateMatrix()
+    }
+
+    function initShaderProgram() {
+      try {
+        shader.vertexShader = vertEditor.value
+        shader.fragmentShader = fragEditor.value
+        shader.initialize(gl)
+      } catch (e) { console.error(e); }
+    }
+    initShaderProgram();
+    vertEditor.onkeyup = initShaderProgram;
+    fragEditor.onkeyup = initShaderProgram;
+
+    // Mouse and keyboard interactions
+    let mouseDown = false, lastX, lastY;
+
+    canvas.addEventListener('mousedown', e => { mouseDown = true; lastX = e.clientX; lastY = e.clientY; });
+    canvas.addEventListener('mouseup', () => mouseDown = false);
+    canvas.addEventListener('mousemove', e => {
+      if (!mouseDown || !activeObj) return;
+        let dx = e.clientX - lastX;
+        let dy = e.clientY - lastY;
+        if(e.shiftKey) {
+          let xPos = Math.min(20, Math.max(-20, Number(document.getElementById("xPos").value) + dx * 0.01));
+          let yPos = Math.min(20, Math.max(-20, Number(document.getElementById("yPos").value) - dy * 0.01));
+          document.getElementById("xPos").value = xPos;
+          document.getElementById("yPos").value = yPos;
+          activeObj.translation.x = xPos
+          activeObj.translation.y = yPos
+          activeObj.updateMatrix()
+        } else {
+          let xRot = (Number(document.getElementById("xRot").value) + dy * 0.01) % (2*Math.PI);
+          let yRot = (Number(document.getElementById("yRot").value) + dx * 0.01) % (2*Math.PI);
+          xRot = xRot < 0 ? 2*Math.PI + xRot : xRot;
+          yRot = yRot < 0 ? 2*Math.PI + yRot : yRot;
+          document.getElementById("xRot").value = xRot;
+          document.getElementById("yRot").value = yRot;
+          activeObj.rotation.x = xRot
+          activeObj.rotation.y = yRot
+          activeObj.updateMatrix()
+        }
+      lastX = e.clientX; lastY = e.clientY;
+    });
+
+    // Projection setup
+    let fov = Math.PI / 4, aspect = canvas.width / canvas.height, near = 0.1, far = 1000;
+    let orthoSize = 2.5;
+
+    let camera = new PerspectiveCamera({fov, aspect, near, far});
+    //let camera = new OrthographicCamera({orthoSize, aspect, near, far})
+    camera.translation.z = -50
+    camera.updateModelViewMatrix()
+
+    document.addEventListener('keydown', e => {
+      const step = 0.2;
+      switch (e.code) {
+        case 'ArrowUp': camera.translation.y -= step; break;
+        case 'ArrowDown': camera.translation.y += step; break;
+        case 'ArrowLeft': camera.translation.x += step; break;
+        case 'ArrowRight': camera.translation.x -= step; break;
+        case 'KeyW': camera.translation.z += step; break;
+        case 'KeyS': camera.translation.z -= step; break;
+      }
+      camera.updateModelViewMatrix()
+    });
+
+    let startTime = Date.now();
+
+    function render() {
+      gl.enable(gl.DEPTH_TEST);
+      gl.clearColor(0, 0, 0, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      // set uniform delta time
+      shader.uniforms["uTime"].value = (Date.now() - startTime)/1000
+      
+      shader.render(gl, objects, camera)
+
+      requestAnimationFrame(render)
+    }
+
+    // Initialize when page loads
+    render()
+  </script>
+</body>
+
+</html>

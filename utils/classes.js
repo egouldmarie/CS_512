@@ -8,6 +8,7 @@ class Node {
 
         this.matrix = mat4Identity()
         this.modelMatrix = mat4Identity()
+        this.normalMatrix = mat4Identity()
 
         this.scale = { x: 1, y: 1, z: 1 }
         this.translation = { x: 0, y: 0, z: 0 }
@@ -85,6 +86,7 @@ class Node {
         } else {
             this.modelMatrix = [...this.matrix]
         }
+        this.normalMatrix = transpose(invert(this.modelMatrix, 4), 4)
 
         // update this node's childrens' reference frames
         for (let i in this.children) {
@@ -272,6 +274,10 @@ class Shader {
             this.program,
             "modelMatrix"
         )
+        this.uniformLocations["normalMatrix"] = gl.getUniformLocation(
+            this.program,
+            "normalMatrix"
+        )
         for (let i in this.uniforms) {
             this.uniformLocations[i] = gl.getUniformLocation(this.program, i)
         }
@@ -330,6 +336,13 @@ class Shader {
                 this.uniformLocations["modelMatrix"],
                 false,
                 objects[o].modelMatrix
+            )
+
+            // normal matrix
+            gl.uniformMatrix4fv(
+                this.uniformLocations["normalMatrix"],
+                false,
+                objects[o].normalMatrix
             )
 
             // positions
