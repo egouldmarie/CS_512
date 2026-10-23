@@ -96,13 +96,17 @@ class Node {
 }
 
 class Object extends Node {
-    constructor(gl, { colors, indices, normals, positions }) {
+    constructor(gl, { aColor, dColor, sColor, indices, normals, positions, shininess }) {
         super()
 
-        this.colors = colors
         this.indices = indices
         this.normals = normals
         this.positions = positions
+
+        this.aColor = aColor || [1.0, 1.0, 1.0]
+        this.dColor = dColor || [1.0, 1.0, 1.0]
+        this.sColor = sColor || [1.0, 1.0, 1.0]
+        this.shininess = shininess || 1.0
 
         this.children = []
         this.parent = undefined
@@ -115,9 +119,9 @@ class Object extends Node {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, this.positions, gl.STATIC_DRAW)
 
-        this.colorBuffer = gl.createBuffer()
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW)
+        //this.colorBuffer = gl.createBuffer()
+        //gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
+        //gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW)
 
         if (this.normals) {
             this.normalBuffer = gl.createBuffer()
@@ -256,7 +260,7 @@ class Shader {
 
     updateAttributeLocations(gl) {
         this.posLoc = gl.getAttribLocation(this.program, "position")
-        this.colorLoc = gl.getAttribLocation(this.program, "color")
+        //this.colorLoc = gl.getAttribLocation(this.program, "color")
         this.normLoc = gl.getAttribLocation(this.program, "normal")
     }
 
@@ -277,6 +281,22 @@ class Shader {
         this.uniformLocations["normalMatrix"] = gl.getUniformLocation(
             this.program,
             "normalMatrix"
+        )
+        this.uniformLocations["shininess"] = gl.getUniformLocation(
+            this.program,
+            "shininess"
+        )
+        this.uniformLocations["aColor"] = gl.getUniformLocation(
+            this.program,
+            "aColor"
+        )
+        this.uniformLocations["dColor"] = gl.getUniformLocation(
+            this.program,
+            "dColor"
+        )
+        this.uniformLocations["sColor"] = gl.getUniformLocation(
+            this.program,
+            "sColor"
         )
         for (let i in this.uniforms) {
             this.uniformLocations[i] = gl.getUniformLocation(this.program, i)
@@ -345,15 +365,27 @@ class Shader {
                 objects[o].normalMatrix
             )
 
+            // ambient coefficient
+            gl.uniform3fv(this.uniformLocations["aColor"], objects[o].aColor)
+
+            // diffuse coefficient
+            gl.uniform3fv(this.uniformLocations["dColor"], objects[o].dColor)
+
+            // specular coefficient
+            gl.uniform3fv(this.uniformLocations["sColor"], objects[o].sColor)
+
+            // shininess coefficient
+            gl.uniform1f(this.uniformLocations["shininess"], objects[o].shininess)
+
             // positions
             gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].positionBuffer)
             gl.enableVertexAttribArray(this.posLoc)
             gl.vertexAttribPointer(this.posLoc, 3, gl.FLOAT, false, 0, 0)
 
             // colors
-            gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].colorBuffer)
-            gl.enableVertexAttribArray(this.colorLoc)
-            gl.vertexAttribPointer(this.colorLoc, 3, gl.FLOAT, false, 0, 0)
+            //gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].colorBuffer)
+            //gl.enableVertexAttribArray(this.colorLoc)
+            //gl.vertexAttribPointer(this.colorLoc, 3, gl.FLOAT, false, 0, 0)
 
             // normals
             gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].normalBuffer)

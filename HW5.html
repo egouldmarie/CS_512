@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>UNM CS 412/512 HW4</title>
+  <title>UNM CS 412/512 HW5</title>
   <style>
     body {
       color: #ccc;
@@ -112,7 +112,6 @@
   <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
 in vec3 position;
 in vec3 normal;
-in vec3 color;
 
 uniform float uTime; //time in sec
 uniform mat4 modelViewMatrix;
@@ -120,25 +119,54 @@ uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
 uniform mat4 modelMatrix;
 
-out vec3 vColor;
 out vec3 vNormal;
+out vec3 vPosition;
 
 void main() {
-  gl_Position = projectionMatrix * modelViewMatrix * modelMatrix * vec4(position, 1.0);
-  vColor = color;
+  vec4 pos = modelViewMatrix * modelMatrix * vec4(position, 1.0);
+  vPosition = pos.xyz;
+  gl_Position = projectionMatrix * pos;
   vNormal = mat3(normalMatrix) * normal;
 }
 </script>
   <!-- Fragment Shader -->
   <script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
 precision mediump float;
-in vec3 vColor;
 in vec3 vNormal;
+in vec3 vPosition;
+
+uniform vec3 aColor;
+uniform vec3 dColor;
+uniform vec3 sColor;
+
+uniform float shininess;
 
 out vec4 fragColor;
 
 void main() {
-  fragColor = vec4(0.5*vNormal+vec3(0.5), 1.0);
+  // ambient coefficient
+  vec3 Ka = vec3(0.2);
+
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(-vPosition);           // camera sits at the origin
+
+  // light 1
+  vec3 L1 = normalize(vec3(3., 4., 5.) - vPosition);
+  vec3 R1 = reflect(-L1, N);
+  vec3 diff1 = vec3(0.8)*max(dot(N, L1), 0.0);
+  vec3 spec1 = vec3(0.5)*pow(max(dot(V, R1), 0.0), shininess);
+
+  // light 2 (teal light)
+  vec3 L2 = normalize(vec3(-6., -8., 1.) - vPosition);
+  vec3 R2 = reflect(-L2, N);
+  vec3 diff2 = vec3(0., 0.2, 0.3)*max(dot(N, L2), 0.0);
+  vec3 spec2 = vec3(0., 0.3, 0.4)*pow(max(dot(V, R2), 0.0), shininess);
+
+  vec3 Ia = Ka;
+  vec3 Id = diff1 + diff2;
+  vec3 Is = spec1 + spec2;
+
+  fragColor = vec4(aColor*Ia + dColor*Id + sColor*Is, 1.0);
 }
 </script>
   <script src="utils/classes.js"></script>

@@ -6,7 +6,7 @@
 //   P: Perspective warping, from frustum to box
 //   F: z-axis flip.
 
-// Warpping the frustum into the box [l,r][b,t][n,f]
+// Warping the frustum into the box [l,r][b,t][n,f]
 //   [ n  0   0    0  ]
 //   [ 0  n   0    0  ]
 //   [ 0  0  f+n  -fn ]
