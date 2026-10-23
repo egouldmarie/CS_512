@@ -97,8 +97,7 @@
           <div>
             Material Properties<br/>
             X: <input type="range" min="1" max="5" step="0.01" value="1" id="xScale" oninput="updateObj()"/></br>
-            Y: <input type="range" min="1" max="5" step="0.01" value="1" id="yScale" oninput="updateObj()"/></br>
-            Z: <input type="range" min="1" max="5" step="0.01" value="1" id="zScale" oninput="updateObj()"/></br>
+            Shininess: <input type="range" min="1" max="300" step="1" value="1" id="shininess" oninput="updateObj()"/></br>
           </div>
         </div>
       </div>
@@ -112,6 +111,7 @@
   <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
 in vec3 position;
 in vec3 normal;
+in vec3 color;
 
 uniform float uTime; //time in sec
 uniform mat4 modelViewMatrix;
@@ -119,19 +119,22 @@ uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
 uniform mat4 modelMatrix;
 
+out vec3 vColor;
 out vec3 vNormal;
 out vec3 vPosition;
 
 void main() {
   vec4 pos = modelViewMatrix * modelMatrix * vec4(position, 1.0);
   vPosition = pos.xyz;
-  gl_Position = projectionMatrix * pos;
   vNormal = mat3(normalMatrix) * normal;
+  vColor = color;
+  gl_Position = projectionMatrix * pos;
 }
 </script>
   <!-- Fragment Shader -->
   <script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
 precision mediump float;
+in vec3 vColor;
 in vec3 vNormal;
 in vec3 vPosition;
 
@@ -156,11 +159,11 @@ void main() {
   vec3 diff1 = vec3(0.8)*max(dot(N, L1), 0.0);
   vec3 spec1 = vec3(0.5)*pow(max(dot(V, R1), 0.0), shininess);
 
-  // light 2 (teal light)
-  vec3 L2 = normalize(vec3(-6., -8., 1.) - vPosition);
+  // light 2 (red light)
+  vec3 L2 = normalize(vec3(2., 6., 5.) - vPosition);
   vec3 R2 = reflect(-L2, N);
-  vec3 diff2 = vec3(0., 0.2, 0.3)*max(dot(N, L2), 0.0);
-  vec3 spec2 = vec3(0., 0.3, 0.4)*pow(max(dot(V, R2), 0.0), shininess);
+  vec3 diff2 = vec3(0.5, 0., 0.)*max(dot(N, L2), 0.0);
+  vec3 spec2 = vec3(0.5, 0., 0.)*pow(max(dot(V, R2), 0.0), shininess);
 
   vec3 Ia = Ka;
   vec3 Id = diff1 + diff2;
@@ -195,10 +198,10 @@ void main() {
       document.getElementById("segE")
     ]
 
-    let segmentA = new Object(gl, makeSphere(2, 32, [1, 0.451, 0.808]))
+    let segmentA = new Object(gl, {...makeSphere(2, 32), dColor:[1, 0.451, 0.808], shininess:10})
     segmentA.name = "Segment A"
 
-    let pntsB = makePrism(1, 5, 32, [1, 0.816, 0])
+    let pntsB = makePrism(1, 5, 32)
     let cx = Math.cos(Math.PI/2),
         sx = Math.sin(Math.PI/2)
     for(let i=0; i<pntsB.positions.length/3; i++) {
@@ -212,13 +215,13 @@ void main() {
       pntsB.normals[i*3+1] = cx*ny - sx*nz
       pntsB.normals[i*3+2] = sx*ny + cx*nz
     }
-    let segmentB = new Object(gl, pntsB)
+    let segmentB = new Object(gl, {...pntsB, dColor:[1, 0.816, 0], shininess:1})
     segmentB.name = "Segment B"
     segmentB.translation.y = 2
     segmentB.updateMatrix()
     segmentA.add(segmentB)
 
-    let pntsC = makePrism(0.75, 6, 32, [0.392, 1, 0.392])
+    let pntsC = makePrism(0.75, 6, 32)
     for(let i=0; i<pntsC.positions.length/3; i++) {
       let ny = pntsC.normals[i*3+1]
       let nz = pntsC.normals[i*3+2]
@@ -230,13 +233,13 @@ void main() {
       pntsC.normals[i*3+1] = cx*ny - sx*nz
       pntsC.normals[i*3+2] = sx*ny + cx*nz
     }
-    let segmentC = new Object(gl, pntsC)
+    let segmentC = new Object(gl, {...pntsC, dColor:[0.392, 1, 0.392], shininess:20})
     segmentC.name = "Segment C"
     segmentC.translation.y = 5
     segmentC.updateMatrix()
     segmentB.add(segmentC)
 
-    let pntsD = makePrism(0.75, 6, 32, [0.188, 0.690, 1])
+    let pntsD = makePrism(0.75, 6, 32)
     for(let i=0; i<pntsD.positions.length/3; i++) {
       let ny = pntsD.normals[i*3+1]
       let nz = pntsD.normals[i*3+2]
@@ -248,12 +251,12 @@ void main() {
       pntsD.normals[i*3+1] = cx*ny - sx*nz
       pntsD.normals[i*3+2] = sx*ny + cx*nz
     }
-    let segmentD = new Object(gl, pntsD)
+    let segmentD = new Object(gl, {...pntsD, dColor:[0.188, 0.690, 1], shininess:50})
     segmentD.name = "Segment D"
     segmentD.translation.y = 6
     segmentD.updateMatrix()
     segmentC.add(segmentD)
-    let segmentE = new Object(gl, makeSphere(1.5, 16, [0.761, 0.471, 1]))
+    let segmentE = new Object(gl, {...makeSphere(1.5, 16), dColor:[0.761, 0.471, 1], shininess:100})
     segmentE.name = "SegmentE"
     segmentE.translation.y = 7.5
     segmentE.scale.z = 0.25
@@ -281,8 +284,7 @@ void main() {
       document.getElementById("yRot").value = activeObj.rotation.y;
       document.getElementById("zRot").value = activeObj.rotation.z;
       document.getElementById("xScale").value = activeObj.scale.x;
-      document.getElementById("yScale").value = activeObj.scale.y;
-      document.getElementById("zScale").value = activeObj.scale.z;
+      document.getElementById("shininess").value = activeObj.shininess;
     }
     setActiveSegment(activeIdx)
 
@@ -294,8 +296,7 @@ void main() {
       activeObj.rotation.y = Number(document.getElementById("yRot").value)
       activeObj.rotation.z = Number(document.getElementById("zRot").value)
       activeObj.scale.x = Number(document.getElementById("xScale").value)
-      activeObj.scale.y = Number(document.getElementById("yScale").value)
-      activeObj.scale.z = Number(document.getElementById("zScale").value)
+      activeObj.shininess = Number(document.getElementById("shininess").value)
       activeObj.updateMatrix()
     }
 

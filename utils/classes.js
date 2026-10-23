@@ -96,9 +96,10 @@ class Node {
 }
 
 class Object extends Node {
-    constructor(gl, { aColor, dColor, sColor, indices, normals, positions, shininess }) {
+    constructor(gl, { colors, indices, normals, positions, shininess, aColor, dColor, sColor }) {
         super()
 
+        this.colors = colors
         this.indices = indices
         this.normals = normals
         this.positions = positions
@@ -119,9 +120,9 @@ class Object extends Node {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, this.positions, gl.STATIC_DRAW)
 
-        //this.colorBuffer = gl.createBuffer()
-        //gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
-        //gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW)
+        this.colorBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW)
 
         if (this.normals) {
             this.normalBuffer = gl.createBuffer()
@@ -260,7 +261,7 @@ class Shader {
 
     updateAttributeLocations(gl) {
         this.posLoc = gl.getAttribLocation(this.program, "position")
-        //this.colorLoc = gl.getAttribLocation(this.program, "color")
+        this.colorLoc = gl.getAttribLocation(this.program, "color")
         this.normLoc = gl.getAttribLocation(this.program, "normal")
     }
 
@@ -383,9 +384,9 @@ class Shader {
             gl.vertexAttribPointer(this.posLoc, 3, gl.FLOAT, false, 0, 0)
 
             // colors
-            //gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].colorBuffer)
-            //gl.enableVertexAttribArray(this.colorLoc)
-            //gl.vertexAttribPointer(this.colorLoc, 3, gl.FLOAT, false, 0, 0)
+            gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].colorBuffer)
+            gl.enableVertexAttribArray(this.colorLoc)
+            gl.vertexAttribPointer(this.colorLoc, 3, gl.FLOAT, false, 0, 0)
 
             // normals
             gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].normalBuffer)
