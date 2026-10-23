@@ -96,7 +96,7 @@
           </div>
           <div>
             Material Properties<br/>
-            X: <input type="range" min="1" max="5" step="0.01" value="1" id="xScale" oninput="updateObj()"/></br>
+            Highlight Intensity: <input type="range" min="1" max="5" step="0.01" value="1" id="sColor" oninput="updateObj()"/></br>
             Shininess: <input type="range" min="1" max="300" step="1" value="1" id="shininess" oninput="updateObj()"/></br>
           </div>
         </div>
@@ -283,7 +283,7 @@ void main() {
       document.getElementById("xRot").value = activeObj.rotation.x;
       document.getElementById("yRot").value = activeObj.rotation.y;
       document.getElementById("zRot").value = activeObj.rotation.z;
-      document.getElementById("xScale").value = activeObj.scale.x;
+      document.getElementById("sColor").value = activeObj.sColor[0];
       document.getElementById("shininess").value = activeObj.shininess;
     }
     setActiveSegment(activeIdx)
@@ -295,7 +295,8 @@ void main() {
       activeObj.rotation.x = Number(document.getElementById("xRot").value)
       activeObj.rotation.y = Number(document.getElementById("yRot").value)
       activeObj.rotation.z = Number(document.getElementById("zRot").value)
-      activeObj.scale.x = Number(document.getElementById("xScale").value)
+      let s = Number(document.getElementById("sColor").value)
+      activeObj.sColor = [s, s, s]
       activeObj.shininess = Number(document.getElementById("shininess").value)
       activeObj.updateMatrix()
     }
