@@ -3,21 +3,37 @@
 function makeCube(d) {
     const positions = new Float32Array([
         // 0
-        -d / 2, -d / 2, -d / 2,
+        -d / 2,
+        -d / 2,
+        -d / 2,
         // 1
-        d / 2, -d / 2, -d / 2,
+        d / 2,
+        -d / 2,
+        -d / 2,
         // 2
-        d / 2, d / 2, -d / 2,
+        d / 2,
+        d / 2,
+        -d / 2,
         // 3
-        -d / 2, d / 2, -d / 2,
+        -d / 2,
+        d / 2,
+        -d / 2,
         // 4
-        -d / 2, -d / 2, d / 2,
+        -d / 2,
+        -d / 2,
+        d / 2,
         // 5
-        d / 2, -d / 2, d / 2,
+        d / 2,
+        -d / 2,
+        d / 2,
         // 6
-        d / 2, d / 2, d / 2,
+        d / 2,
+        d / 2,
+        d / 2,
         // 7
-        -d / 2, d / 2, d / 2
+        -d / 2,
+        d / 2,
+        d / 2
     ])
     const indices = new Uint16Array([
         // Front
@@ -44,14 +60,15 @@ function makeCube(d) {
 }
 
 // sphere
-function makeSphere(radius, resolution, color=[1, 1, 1]) {
+function makeSphere(radius, resolution, color = [1, 1, 1]) {
     radius = Math.max(radius, 0)
     let wResolution = Math.floor(Math.min(64, Math.max(4, resolution)))
     let hResolution = Math.floor(wResolution / 2)
     let pos = [],
         ind = [],
         col = [],
-        nrm = []
+        nrm = [],
+        uv = []
     let delPhi = Math.PI / hResolution
     let delTheta = (2 * Math.PI) / wResolution
     for (let j = 1; j < hResolution; j++) {
@@ -63,7 +80,8 @@ function makeSphere(radius, resolution, color=[1, 1, 1]) {
                 y = Math.cos(phi) * Math.sin(theta),
                 z = Math.sin(phi)
             nrm.push(x, y, z)
-            pos.push(radius*x, radius*y, radius*z)
+            pos.push(radius * x, radius * y, radius * z)
+            uv.push(i / wResolution, j / hResolution)
             if (color) {
                 col.push(...color)
             } else {
@@ -93,6 +111,7 @@ function makeSphere(radius, resolution, color=[1, 1, 1]) {
     // bottom of sphere
     pos.push(0, 0, -radius)
     nrm.push(0, 0, -1)
+    uv.push(0.5, 0)
     if (color) {
         col.push(...color)
     } else {
@@ -115,6 +134,7 @@ function makeSphere(radius, resolution, color=[1, 1, 1]) {
     // top of sphere
     pos.push(0, 0, radius)
     nrm.push(0, 0, 1)
+    uv.push(0.5, 1)
     if (color) {
         col.push(...color)
     } else {
@@ -138,8 +158,9 @@ function makeSphere(radius, resolution, color=[1, 1, 1]) {
     const indices = new Uint16Array(ind)
     const normals = new Float32Array(nrm)
     const colors = new Float32Array(col)
+    const uvs = new Float32Array(uv)
 
-    return { positions, indices, normals, colors }
+    return { positions, indices, normals, colors, uvs }
 }
 
 // prism
@@ -149,7 +170,8 @@ function makePrism(radius, height, sides, color) {
     let pos = [],
         ind = [],
         col = [],
-        nrm = []
+        nrm = [],
+        uv = []
     for (let j = 0; j <= 1; j++) {
         let z = -height / 2 + j * height
         for (let i = 0; i < sides; i++) {
@@ -157,7 +179,8 @@ function makePrism(radius, height, sides, color) {
             let x = Math.cos(theta),
                 y = Math.sin(theta)
             nrm.push(x, y, 0)
-            pos.push(radius*x, radius*y, z)
+            pos.push(radius * x, radius * y, z)
+            uv.push(i / sides, j)
             if (color) {
                 col.push(...color)
             } else {
@@ -188,6 +211,7 @@ function makePrism(radius, height, sides, color) {
         // center bottom
         pos.push(0, 0, -height / 2)
         nrm.push(0, 0, -1)
+        uv.push(0.5, 0)
         if (color) {
             col.push(...color)
         } else {
@@ -211,6 +235,7 @@ function makePrism(radius, height, sides, color) {
         // center top
         pos.push(0, 0, height / 2)
         nrm.push(0, 0, 1)
+        uv.push(0.5, 1)
         if (color) {
             col.push(...color)
         } else {
@@ -241,6 +266,7 @@ function makePrism(radius, height, sides, color) {
     const normals = new Float32Array(nrm)
     const indices = new Uint16Array(ind)
     const colors = new Float32Array(col)
+    const uvs = new Float32Array(uv)
 
-    return { positions, indices, normals, colors }
+    return { positions, indices, normals, colors, uvs }
 }

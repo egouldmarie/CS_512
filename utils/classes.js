@@ -96,9 +96,23 @@ class Node {
 }
 
 class Object extends Node {
-    constructor(gl, { colors, indices, normals, positions, shininess, aColor, dColor, sColor }) {
+    constructor(
+        gl,
+        {
+            uvs,
+            colors,
+            indices,
+            normals,
+            positions,
+            shininess,
+            aColor,
+            dColor,
+            sColor
+        }
+    ) {
         super()
 
+        this.uvs = uvs
         this.colors = colors
         this.indices = indices
         this.normals = normals
@@ -128,6 +142,12 @@ class Object extends Node {
             this.normalBuffer = gl.createBuffer()
             gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer)
             gl.bufferData(gl.ARRAY_BUFFER, this.normals, gl.STATIC_DRAW)
+        }
+
+        if (this.uvs) {
+            this.uvBuffer = gl.createBuffer()
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, this.uvs, gl.STATIC_DRAW)
         }
 
         if (this.indices) {
@@ -263,6 +283,7 @@ class Shader {
         this.posLoc = gl.getAttribLocation(this.program, "position")
         this.colorLoc = gl.getAttribLocation(this.program, "color")
         this.normLoc = gl.getAttribLocation(this.program, "normal")
+        this.uvLoc = gl.getAttribLocation(this.program, "uv")
     }
 
     updateUniformLocations(gl) {
@@ -376,7 +397,10 @@ class Shader {
             gl.uniform3fv(this.uniformLocations["sColor"], objects[o].sColor)
 
             // shininess coefficient
-            gl.uniform1f(this.uniformLocations["shininess"], objects[o].shininess)
+            gl.uniform1f(
+                this.uniformLocations["shininess"],
+                objects[o].shininess
+            )
 
             // positions
             gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].positionBuffer)
@@ -384,16 +408,27 @@ class Shader {
             gl.vertexAttribPointer(this.posLoc, 3, gl.FLOAT, false, 0, 0)
 
             // colors
-            gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].colorBuffer)
-            gl.enableVertexAttribArray(this.colorLoc)
-            gl.vertexAttribPointer(this.colorLoc, 3, gl.FLOAT, false, 0, 0)
+            if (this.colorLoc >= 0) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].colorBuffer)
+                gl.enableVertexAttribArray(this.colorLoc)
+                gl.vertexAttribPointer(this.colorLoc, 3, gl.FLOAT, false, 0, 0)
+            }
 
             // normals
-            gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].normalBuffer)
-            gl.enableVertexAttribArray(this.normLoc)
-            gl.vertexAttribPointer(this.normLoc, 3, gl.FLOAT, false, 0, 0)
+            if (this.normLoc >= 0) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].normalBuffer)
+                gl.enableVertexAttribArray(this.normLoc)
+                gl.vertexAttribPointer(this.normLoc, 3, gl.FLOAT, false, 0, 0)
+            }
 
-            if(objects[o].indices) {
+            // uvs
+            if (this.uvLoc >= 0) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].uvBuffer)
+                gl.enableVertexAttribArray(this.uvLoc)
+                gl.vertexAttribPointer(this.uvLoc, 2, gl.FLOAT, false, 0, 0)
+            }
+
+            if (objects[o].indices) {
                 // draw by index order
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[o].indexBuffer)
                 gl.drawElements(
