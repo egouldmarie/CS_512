@@ -368,6 +368,10 @@ class Shader {
             this.program,
             "uTexture"
         )
+        this.uniformLocations["uBumpTexture"] = gl.getUniformLocation(
+            this.program,
+            "uBumpTexture"
+        )
         for (let i in this.uniforms) {
             this.uniformLocations[i] = gl.getUniformLocation(this.program, i)
         }
