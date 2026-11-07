@@ -94,5 +94,5 @@ void main() {
   vec3 Id = diff1 + diff2 + diff3;
   vec3 Is = spec1 + spec2 + spec3;
 
-  fragColor = vec4(aColor*Ia + dColor*Id + sColor*Is, 1.0);
+  fragColor = vec4(aColor*Ia + diffColor*Id + sColor*Is, 1.0);
 }`
