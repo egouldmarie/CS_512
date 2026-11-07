@@ -219,14 +219,6 @@
                                     </td>
                                 </tr>
                             </table>
-                            <table>
-                                <tr>
-                                    <td>Texture:</td>
-                                    <td>
-                                        <select id="textureSelect"></select>
-                                    </td>
-                                </tr>
-                            </table>
                         </div>
                         <div>
                             <b>Material Properties</b><br />
@@ -283,6 +275,17 @@
             </div>
         </div>
 
+        <img src="img/201.jpg" id="tex1" />
+        <img src="img/201_norm.jpg" id="bump1" />
+        <img src="img/202.jpg" id="tex2" />
+        <img src="img/202_norm.jpg" id="bump2" />
+        <img src="img/203.jpg" id="tex3" />
+        <img src="img/203_norm.jpg" id="bump3" />
+        <img src="img/204.jpg" id="tex4" />
+        <img src="img/204_norm.jpg" id="bump4" />
+        <img src="img/205.jpg" id="tex5" />
+        <img src="img/205_norm.jpg" id="bump5" />
+
         <script src="utils/classes.js"></script>
         <script src="utils/shaders.js"></script>
         <script src="utils/primitives.js"></script>
@@ -300,14 +303,6 @@
             vertEditor.value = vertexShader
             fragEditor.value = fragmentShader
 
-            let texSel = document.getElementById("textureSelect")
-            for (let i = 1; i <= 50; i++) {
-                let texOpt = document.createElement("option")
-                texOpt.value = `20${i}`
-                texOpt.innerHTML = `Texture ${i}`
-                texSel.appendChild(texOpt)
-            }
-
             let objSelectors = [
                 document.getElementById("segA"),
                 document.getElementById("segB"),
@@ -320,16 +315,12 @@
                 uTime: { type: "float", value: 0 }
             })
 
-            let texA = document.createElement("img")
-            texA.src = "./img/201.jpg"
-            let bumpA = document.createElement("img")
-            bumpA.src = "./img/201_norm.jpg"
             let segmentA = new Object(gl, {
                 ...makeSphere(2, 32),
                 dColor: [1, 0.451, 0.808],
                 shininess: 10,
-                bumpElement: bumpA,
-                textureElement: texA
+                bumpElement: document.getElementById("bump1"),
+                textureElement: document.getElementById("tex1")
             })
             segmentA.name = "Segment A"
 
@@ -347,16 +338,12 @@
                 pntsB.normals[i * 3 + 1] = cx * ny - sx * nz
                 pntsB.normals[i * 3 + 2] = sx * ny + cx * nz
             }
-            let texB = document.createElement("img")
-            texB.src = "./img/201.jpg"
-            let bumpB = document.createElement("img")
-            bumpB.src = "./img/201_norm.jpg"
             let segmentB = new Object(gl, {
                 ...pntsB,
                 dColor: [1, 0.816, 0],
                 shininess: 1,
-                bumpElement: bumpB,
-                textureElement: texB
+                bumpElement: document.getElementById("bump2"),
+                textureElement: document.getElementById("tex2")
             })
             segmentB.name = "Segment B"
             segmentB.translation.y = 2
@@ -379,8 +366,8 @@
                 ...pntsC,
                 dColor: [0.392, 1, 0.392],
                 shininess: 20,
-                bumpElement: document.createElement("img"),
-                textureElement: document.createElement("img")
+                bumpElement: document.getElementById("bump3"),
+                textureElement: document.getElementById("tex3")
             })
             segmentC.name = "Segment C"
             segmentC.translation.y = 5
@@ -403,8 +390,8 @@
                 ...pntsD,
                 dColor: [0.188, 0.69, 1],
                 shininess: 50,
-                bumpElement: document.createElement("img"),
-                textureElement: document.createElement("img")
+                bumpElement: document.getElementById("bump4"),
+                textureElement: document.getElementById("tex4")
             })
             segmentD.name = "Segment D"
             segmentD.translation.y = 6
@@ -414,8 +401,8 @@
                 ...makeSphere(1.5, 16),
                 dColor: [0.761, 0.471, 1],
                 shininess: 100,
-                bumpElement: document.createElement("img"),
-                textureElement: document.createElement("img")
+                bumpElement: document.getElementById("bump5"),
+                textureElement: document.getElementById("tex5")
             })
             segmentE.name = "SegmentE"
             segmentE.translation.y = 7.5

@@ -162,31 +162,27 @@ class Object extends Node {
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW)
         }
 
-        this.textureElement.onload = () => {
-            this.texture = gl.createTexture()
-            gl.bindTexture(gl.TEXTURE_2D, this.texture)
-            gl.texImage2D(
-                gl.TEXTURE_2D,
-                0,
-                gl.RGBA,
-                gl.RGBA,
-                gl.UNSIGNED_BYTE,
-                this.textureElement
-            )
-        }
+        this.texture = gl.createTexture()
+        gl.bindTexture(gl.TEXTURE_2D, this.texture)
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            this.textureElement
+        )
 
-        this.bumpElement.onload = () => {
-            this.bumpTexture = gl.createTexture()
-            gl.bindTexture(gl.TEXTURE_2D, this.bumpTexture)
-            gl.texImage2D(
-                gl.TEXTURE_2D,
-                0,
-                gl.RGBA,
-                gl.RGBA,
-                gl.UNSIGNED_BYTE,
-                this.bumpElement
-            )
-        }
+        this.bumpTexture = gl.createTexture()
+        gl.bindTexture(gl.TEXTURE_2D, this.bumpTexture)
+        gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            this.bumpElement
+        )
     }
 }
 
@@ -452,6 +448,22 @@ class Shader {
                 gl.activeTexture(gl.TEXTURE0)
                 gl.bindTexture(gl.TEXTURE_2D, objects[o].texture)
                 gl.uniform1i(this.uniformLocations["uTexture"], 0)
+                gl.texParameteri(
+                    gl.TEXTURE_2D,
+                    gl.TEXTURE_MIN_FILTER,
+                    gl.LINEAR
+                )
+            }
+
+            if (objects[o].bumpTexture) {
+                gl.activeTexture(gl.TEXTURE1)
+                gl.bindTexture(gl.TEXTURE_2D, objects[o].bumpTexture)
+                gl.uniform1i(this.uniformLocations["uBumpTexture"], 0)
+                gl.texParameteri(
+                    gl.TEXTURE_2D,
+                    gl.TEXTURE_MIN_FILTER,
+                    gl.LINEAR
+                )
             }
 
             // positions
