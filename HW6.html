@@ -139,7 +139,7 @@
                         "
                     >
                         <div>
-                            Rotation<br />
+                            <b>Rotation</b><br />
                             <table>
                                 <tr>
                                     <td>X:</td>
@@ -186,34 +186,34 @@
                             </table>
                         </div>
                         <div>
-                            Textures<br />
+                            <b>Textures</b><br />
+                            <table>
+                                <tr class="segments">
+                                    <td
+                                        id="normalMode"
+                                        onclick="setTextureMappingMode(0)"
+                                    >
+                                        Normal Mapping
+                                    </td>
+                                    <td
+                                        id="bumpMode"
+                                        onclick="setTextureMappingMode(1)"
+                                    >
+                                        Bump Mapping
+                                    </td>
+                                </tr>
+                            </table>
                             <table>
                                 <tr>
-                                    <td>Mode:</td>
+                                    <td>Texture:</td>
                                     <td>
-                                        <input type="checkbox" id="texMode" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Color:</td>
-                                    <td>
-                                        <select>
-                                            <option></option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Bump:</td>
-                                    <td>
-                                        <select>
-                                            <option></option>
-                                        </select>
+                                        <select id="textureSelect"></select>
                                     </td>
                                 </tr>
                             </table>
                         </div>
                         <div>
-                            Material Properties<br />
+                            <b>Material Properties</b><br />
                             <table>
                                 <tr>
                                     <td>Ambient Coefficient:</td>
@@ -284,9 +284,13 @@
             vertEditor.value = vertexShader
             fragEditor.value = fragmentShader
 
-            let shader = new Shader(gl, vertEditor.value, fragEditor.value, {
-                uTime: { type: "float", value: 0 }
-            })
+            let texSel = document.getElementById("textureSelect")
+            for (let i = 1; i <= 50; i++) {
+                let texOpt = document.createElement("option")
+                texOpt.value = `20${i}`
+                texOpt.innerHTML = `Texture ${i}`
+                texSel.appendChild(texOpt)
+            }
 
             let objSelectors = [
                 document.getElementById("segA"),
@@ -295,6 +299,10 @@
                 document.getElementById("segD"),
                 document.getElementById("segE")
             ]
+
+            let shader = new Shader(gl, vertEditor.value, fragEditor.value, {
+                uTime: { type: "float", value: 0 }
+            })
 
             let segmentA = new Object(gl, {
                 ...makeSphere(2, 32),
@@ -395,6 +403,13 @@
                 document.getElementById("aColor").value = activeObj.aColor[0]
                 document.getElementById("sColor").value = activeObj.sColor[0]
                 document.getElementById("shininess").value = activeObj.shininess
+                if (activeObj.textureMode === 0) {
+                    document.getElementById(
+                        "normalMode"
+                    ).style.backgroundColor = ""
+                } else {
+                    document.getElementById("")
+                }
             }
             setActiveSegment(activeIdx)
 
@@ -416,6 +431,22 @@
                     document.getElementById("shininess").value
                 )
                 activeObj.updateMatrix()
+            }
+
+            let textureModes = [
+                document.getElementById("normalMode"),
+                document.getElementById("bumpMode")
+            ]
+            let activeModeIdx = 0
+            function setTextureMappingMode(mode) {
+                textureModes[activeModeIdx].style.backgroundColor = ""
+                activeModeIdx = mode
+                textureModes[mode].style.backgroundColor = "#444444"
+            }
+            setTextureMappingMode(0)
+
+            function updateTexture() {
+                //
             }
 
             function initShaderProgram() {
