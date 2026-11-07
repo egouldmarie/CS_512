@@ -1,338 +1,558 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+    <head>
+        <meta charset="utf-8" />
+        <title>UNM CS 412/512 HW6</title>
+        <style>
+            body {
+                color: #ccc;
+                width: calc(100vw - 20px);
+                height: calc(100vh - 80px);
+                margin: 10px;
+                background: #111;
+                font-family: monospace;
+            }
 
-<head>
-  <meta charset="utf-8">
-  <title>UNM CS 412/512 HW6</title>
-  <style>
-    body {
-      color: #ccc;
-      width: calc(100vw - 20px);
-      height: calc(100vh - 30px);
-      margin: 10px;
-      background: #111;
-      font-family: monospace;
-    }
+            textarea {
+                background: #222;
+                color: #0f0;
+                font: 14px monospace;
+                width: 300px;
+                height: calc((100vh - 185px) / 2);
+            }
 
-    textarea {
-      background: #222;
-      color: #0f0;
-      font: 14px monospace;
-      width: 300px;
-      height: calc((100vh - 170px)/2);
-    }
+            input {
+                width: 130px;
+            }
 
-    input {
-      width: 130px;
-    }
+            canvas {
+                width: 100%;
+                border: 1px solid #444;
+            }
 
-    canvas {
-      width: 100%;
-      border: 1px solid #444;
-    }
+            #glcanvas-container {
+                height: calc(100vh - 285px);
+            }
 
-    table {
-      width: 100%;
-    }
+            .segments {
+                width: 100%;
+            }
 
-    tr {
-      border: 1px solid white;
-    }
+            .segments tr {
+                border: 1px solid white;
+            }
 
-    td {
-      border: 1px solid white;
-      padding: 5px 14px 5px 14px;
-    }
+            .segments td {
+                border: 1px solid white;
+                padding: 5px 14px 5px 14px;
+            }
 
-    td:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
-  </style>
-</head>
+            .segments td:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+        </style>
+    </head>
 
-<body onresize="onresize()">
-  <h2>Texture Mapping</h2>
-  <div></div>
-  <p>Edit vertex and fragment shaders on the left to get the result instantly. Use mouse to drag and rotate the<br/>
-    selected object. Shift+click and drag to change position. Use arrow keys and w, s keys to move the camera.<br/>
-    Free textures and normal maps from <a href="https://opengameart.org/content/50-free-textures-5-with-normalmaps" target="_blank">opengameart.com</a>.<br/></p>
-  <div style="display: flex; gap: 10px; align-items: flex-start;">
-    <div style="display: flex; flex-direction: column; gap: 10px;">
-      <div>
-        <b>Vertex Shader</b><br/>
-        <textarea id="vertEditor"></textarea>
-      </div>
-      <div>
-        <b>Fragment Shader</b><br/>
-        <textarea id="fragEditor"></textarea>
-      </div>
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-      <div style="width: 100%;">
-        <b>Controls</b><br/>
-        <table>
-            <tr>
-              <td id="segA" style="color:rgb(255, 115, 206)" onclick="setActiveSegment(0)">Segment A</td>
-              <td id="segB" style="color:rgb(255, 208, 0)" onclick="setActiveSegment(1)">Segment B</td>
-              <td id="segC" style="color:rgb(100, 255, 100)" onclick="setActiveSegment(2)">Segment C</td>
-              <td id="segD" style="color:rgb(48, 176, 255)" onclick="setActiveSegment(3)">Segment D</td>
-              <td id="segE" style="color:rgb(194, 120, 255)" onclick="setActiveSegment(4)">Segment E</td>
-            </tr>
-        </table>
-      </div>
-      <div>
-        <div style="display: flex; gap: 20px; align-items: flex-start; justify-content: space-around;">
-          <div>
-            Rotation<br/>
-            X: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="xRot" oninput="updateObj()"/></br>
-            Y: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="yRot" oninput="updateObj()"/></br>
-            Z: <input type="range" min="0" max="6.283185307179586" step="0.01" value="0" id="zRot" oninput="updateObj()"/></br>
-          </div>
-          <div>
-            Position<br/>
-            X: <input type="range" min="-20" max="20" step="0.01" value="0" id="xPos" oninput="updateObj()"/></br>
-            Y: <input type="range" min="-20" max="20" step="0.01" value="0" id="yPos" oninput="updateObj()"/></br>
-            Z: <input type="range" min="-20" max="20" step="0.01" value="0" id="zPos" oninput="updateObj()"/></br>
-          </div>
-          <div>
-            Material Properties<br/>
-            Ambient Coefficient: <input type="range" min="1" max="5" step="0.01" value="1" id="aColor" oninput="updateObj()"/></br>
-            Specular Coefficient: <input type="range" min="1" max="5" step="0.01" value="1" id="sColor" oninput="updateObj()"/></br>
-            Shininess: <input type="range" min="1" max="300" step="1" value="1" id="shininess" oninput="updateObj()"/></br>
-          </div>
+    <body onresize="onresize()">
+        <h2>Texture Mapping</h2>
+        <div></div>
+        <p>
+            Edit vertex and fragment shaders on the left to get the result
+            instantly. Use mouse to drag and rotate the<br />
+            selected object. Shift+click and drag to change position. Use arrow
+            keys and w, s keys to move the camera.<br />
+            Free textures and normal maps from
+            <a
+                href="https://opengameart.org/content/50-free-textures-5-with-normalmaps"
+                target="_blank"
+                >opengameart.com</a
+            >.<br />
+        </p>
+        <div style="display: flex; gap: 10px; align-items: flex-start">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+                <div>
+                    <b>Vertex Shader</b><br />
+                    <textarea id="vertEditor"></textarea>
+                </div>
+                <div>
+                    <b>Fragment Shader</b><br />
+                    <textarea id="fragEditor"></textarea>
+                </div>
+            </div>
+            <div
+                style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    width: 100%;
+                "
+            >
+                <div style="width: 100%">
+                    <b>Controls</b><br />
+                    <table class="segments">
+                        <tr>
+                            <td
+                                id="segA"
+                                style="color: rgb(255, 115, 206)"
+                                onclick="setActiveSegment(0)"
+                            >
+                                Segment A
+                            </td>
+                            <td
+                                id="segB"
+                                style="color: rgb(255, 208, 0)"
+                                onclick="setActiveSegment(1)"
+                            >
+                                Segment B
+                            </td>
+                            <td
+                                id="segC"
+                                style="color: rgb(100, 255, 100)"
+                                onclick="setActiveSegment(2)"
+                            >
+                                Segment C
+                            </td>
+                            <td
+                                id="segD"
+                                style="color: rgb(48, 176, 255)"
+                                onclick="setActiveSegment(3)"
+                            >
+                                Segment D
+                            </td>
+                            <td
+                                id="segE"
+                                style="color: rgb(194, 120, 255)"
+                                onclick="setActiveSegment(4)"
+                            >
+                                Segment E
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div>
+                    <div
+                        style="
+                            display: flex;
+                            gap: 20px;
+                            align-items: flex-start;
+                            justify-content: space-around;
+                        "
+                    >
+                        <div>
+                            Rotation<br />
+                            <table>
+                                <tr>
+                                    <td>X:</td>
+                                    <td>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="6.283185307179586"
+                                            step="0.01"
+                                            value="0"
+                                            id="xRot"
+                                            oninput="updateObj()"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Y:</td>
+                                    <td>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="6.283185307179586"
+                                            step="0.01"
+                                            value="0"
+                                            id="yRot"
+                                            oninput="updateObj()"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Z:</td>
+                                    <td>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="6.283185307179586"
+                                            step="0.01"
+                                            value="0"
+                                            id="zRot"
+                                            oninput="updateObj()"
+                                        />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div>
+                            Textures<br />
+                            <table>
+                                <tr>
+                                    <td>Mode:</td>
+                                    <td>
+                                        <input type="checkbox" id="texMode" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Color:</td>
+                                    <td>
+                                        <select>
+                                            <option></option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Bump:</td>
+                                    <td>
+                                        <select>
+                                            <option></option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div>
+                            Material Properties<br />
+                            <table>
+                                <tr>
+                                    <td>Ambient Coefficient:</td>
+                                    <td>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="5"
+                                            step="0.01"
+                                            value="1"
+                                            id="aColor"
+                                            oninput="updateObj()"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Specular Coefficient:</td>
+                                    <td>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="5"
+                                            step="0.01"
+                                            value="1"
+                                            id="sColor"
+                                            oninput="updateObj()"
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Shininess:</td>
+                                    <td>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="300"
+                                            step="1"
+                                            value="1"
+                                            id="shininess"
+                                            oninput="updateObj()"
+                                        />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div id="glcanvas-container">
+                    <canvas id="glcanvas"></canvas>
+                </div>
+            </div>
         </div>
-      </div>
-      <div id="glcanvas-container" style="height:calc(100vh - 260px);">
-        <canvas id="glcanvas"></canvas>
-      </div>
-    </div>
-  </div>
 
-  <script src="utils/classes.js"></script>
-  <script src="utils/shaders.js"></script>
-  <script src="utils/primitives.js"></script>
-  <script src="utils/transformations.js"></script>
+        <script src="utils/classes.js"></script>
+        <script src="utils/shaders.js"></script>
+        <script src="utils/primitives.js"></script>
+        <script src="utils/transformations.js"></script>
 
-  <script>
-    // WebGL setup
-    const canvas = document.getElementById("glcanvas");
-    const container = document.getElementById("glcanvas-container")
-    const gl = canvas.getContext("webgl2");
-    if (!gl) alert("WebGL2 not supported");
+        <script>
+            // WebGL setup
+            const canvas = document.getElementById("glcanvas")
+            const container = document.getElementById("glcanvas-container")
+            const gl = canvas.getContext("webgl2")
+            if (!gl) alert("WebGL2 not supported")
 
-    let vertEditor = document.getElementById("vertEditor");
-    let fragEditor = document.getElementById("fragEditor");
-    vertEditor.value = vertexShader;
-    fragEditor.value = fragmentShader;
+            let vertEditor = document.getElementById("vertEditor")
+            let fragEditor = document.getElementById("fragEditor")
+            vertEditor.value = vertexShader
+            fragEditor.value = fragmentShader
 
-    let shader = new Shader(gl, vertEditor.value, fragEditor.value, {"uTime":{type:"float", value:0}})
+            let shader = new Shader(gl, vertEditor.value, fragEditor.value, {
+                uTime: { type: "float", value: 0 }
+            })
 
-    let objSelectors = [
-      document.getElementById("segA"),
-      document.getElementById("segB"),
-      document.getElementById("segC"),
-      document.getElementById("segD"),
-      document.getElementById("segE")
-    ]
+            let objSelectors = [
+                document.getElementById("segA"),
+                document.getElementById("segB"),
+                document.getElementById("segC"),
+                document.getElementById("segD"),
+                document.getElementById("segE")
+            ]
 
-    let segmentA = new Object(gl, {...makeSphere(2, 32), dColor:[1, 0.451, 0.808], shininess:10})
-    segmentA.name = "Segment A"
+            let segmentA = new Object(gl, {
+                ...makeSphere(2, 32),
+                dColor: [1, 0.451, 0.808],
+                shininess: 10
+            })
+            segmentA.name = "Segment A"
 
-    let pntsB = makePrism(1, 5, 32)
-    let cx = Math.cos(Math.PI/2),
-        sx = Math.sin(Math.PI/2)
-    for(let i=0; i<pntsB.positions.length/3; i++) {
-      let ny = pntsB.normals[i*3+1]
-      let nz = pntsB.normals[i*3+2]
-      let y = pntsB.positions[i*3+1]
-      let z = pntsB.positions[i*3+2]
+            let pntsB = makePrism(1, 5, 32)
+            let cx = Math.cos(Math.PI / 2),
+                sx = Math.sin(Math.PI / 2)
+            for (let i = 0; i < pntsB.positions.length / 3; i++) {
+                let ny = pntsB.normals[i * 3 + 1]
+                let nz = pntsB.normals[i * 3 + 2]
+                let y = pntsB.positions[i * 3 + 1]
+                let z = pntsB.positions[i * 3 + 2]
 
-      pntsB.positions[i*3+1] = cx*y - sx*z + 2.5
-      pntsB.positions[i*3+2] = sx*y + cx*z
-      pntsB.normals[i*3+1] = cx*ny - sx*nz
-      pntsB.normals[i*3+2] = sx*ny + cx*nz
-    }
-    let segmentB = new Object(gl, {...pntsB, dColor:[1, 0.816, 0], shininess:1})
-    segmentB.name = "Segment B"
-    segmentB.translation.y = 2
-    segmentB.updateMatrix()
-    segmentA.add(segmentB)
+                pntsB.positions[i * 3 + 1] = cx * y - sx * z + 2.5
+                pntsB.positions[i * 3 + 2] = sx * y + cx * z
+                pntsB.normals[i * 3 + 1] = cx * ny - sx * nz
+                pntsB.normals[i * 3 + 2] = sx * ny + cx * nz
+            }
+            let segmentB = new Object(gl, {
+                ...pntsB,
+                dColor: [1, 0.816, 0],
+                shininess: 1
+            })
+            segmentB.name = "Segment B"
+            segmentB.translation.y = 2
+            segmentB.updateMatrix()
+            segmentA.add(segmentB)
 
-    let pntsC = makePrism(0.75, 6, 32)
-    for(let i=0; i<pntsC.positions.length/3; i++) {
-      let ny = pntsC.normals[i*3+1]
-      let nz = pntsC.normals[i*3+2]
-      let y = pntsC.positions[i*3+1]
-      let z = pntsC.positions[i*3+2]
+            let pntsC = makePrism(0.75, 6, 32)
+            for (let i = 0; i < pntsC.positions.length / 3; i++) {
+                let ny = pntsC.normals[i * 3 + 1]
+                let nz = pntsC.normals[i * 3 + 2]
+                let y = pntsC.positions[i * 3 + 1]
+                let z = pntsC.positions[i * 3 + 2]
 
-      pntsC.positions[i*3+1] = cx*y - sx*z + 2.5
-      pntsC.positions[i*3+2] = sx*y + cx*z
-      pntsC.normals[i*3+1] = cx*ny - sx*nz
-      pntsC.normals[i*3+2] = sx*ny + cx*nz
-    }
-    let segmentC = new Object(gl, {...pntsC, dColor:[0.392, 1, 0.392], shininess:20})
-    segmentC.name = "Segment C"
-    segmentC.translation.y = 5
-    segmentC.updateMatrix()
-    segmentB.add(segmentC)
+                pntsC.positions[i * 3 + 1] = cx * y - sx * z + 2.5
+                pntsC.positions[i * 3 + 2] = sx * y + cx * z
+                pntsC.normals[i * 3 + 1] = cx * ny - sx * nz
+                pntsC.normals[i * 3 + 2] = sx * ny + cx * nz
+            }
+            let segmentC = new Object(gl, {
+                ...pntsC,
+                dColor: [0.392, 1, 0.392],
+                shininess: 20
+            })
+            segmentC.name = "Segment C"
+            segmentC.translation.y = 5
+            segmentC.updateMatrix()
+            segmentB.add(segmentC)
 
-    let pntsD = makePrism(0.75, 6, 32)
-    for(let i=0; i<pntsD.positions.length/3; i++) {
-      let ny = pntsD.normals[i*3+1]
-      let nz = pntsD.normals[i*3+2]
-      let y = pntsD.positions[i*3+1]
-      let z = pntsD.positions[i*3+2]
+            let pntsD = makePrism(0.75, 6, 32)
+            for (let i = 0; i < pntsD.positions.length / 3; i++) {
+                let ny = pntsD.normals[i * 3 + 1]
+                let nz = pntsD.normals[i * 3 + 2]
+                let y = pntsD.positions[i * 3 + 1]
+                let z = pntsD.positions[i * 3 + 2]
 
-      pntsD.positions[i*3+1] = cx*y - sx*z + 2.5
-      pntsD.positions[i*3+2] = sx*y + cx*z
-      pntsD.normals[i*3+1] = cx*ny - sx*nz
-      pntsD.normals[i*3+2] = sx*ny + cx*nz
-    }
-    let segmentD = new Object(gl, {...pntsD, dColor:[0.188, 0.690, 1], shininess:50})
-    segmentD.name = "Segment D"
-    segmentD.translation.y = 6
-    segmentD.updateMatrix()
-    segmentC.add(segmentD)
-    let segmentE = new Object(gl, {...makeSphere(1.5, 16), dColor:[0.761, 0.471, 1], shininess:100})
-    segmentE.name = "SegmentE"
-    segmentE.translation.y = 7.5
-    segmentE.scale.z = 0.25
-    segmentE.updateMatrix()
-    segmentD.add(segmentE)
-    let objects = [
-      segmentA,
-      segmentB,
-      segmentC,
-      segmentD,
-      segmentE,
-    ]
+                pntsD.positions[i * 3 + 1] = cx * y - sx * z + 2.5
+                pntsD.positions[i * 3 + 2] = sx * y + cx * z
+                pntsD.normals[i * 3 + 1] = cx * ny - sx * nz
+                pntsD.normals[i * 3 + 2] = sx * ny + cx * nz
+            }
+            let segmentD = new Object(gl, {
+                ...pntsD,
+                dColor: [0.188, 0.69, 1],
+                shininess: 50
+            })
+            segmentD.name = "Segment D"
+            segmentD.translation.y = 6
+            segmentD.updateMatrix()
+            segmentC.add(segmentD)
+            let segmentE = new Object(gl, {
+                ...makeSphere(1.5, 16),
+                dColor: [0.761, 0.471, 1],
+                shininess: 100
+            })
+            segmentE.name = "SegmentE"
+            segmentE.translation.y = 7.5
+            segmentE.scale.z = 0.25
+            segmentE.updateMatrix()
+            segmentD.add(segmentE)
+            let objects = [segmentA, segmentB, segmentC, segmentD, segmentE]
 
-    let activeObj
-    let activeIdx = 0
-    function setActiveSegment(idx) {
-      objSelectors[activeIdx].style.backgroundColor = ""
-      activeIdx = idx
-      activeObj = objects[idx]
-      objSelectors[activeIdx].style.backgroundColor = "#444444"
-      document.getElementById("xPos").value = activeObj.translation.x;
-      document.getElementById("yPos").value = activeObj.translation.y;
-      document.getElementById("zPos").value = activeObj.translation.z;
-      document.getElementById("xRot").value = activeObj.rotation.x;
-      document.getElementById("yRot").value = activeObj.rotation.y;
-      document.getElementById("zRot").value = activeObj.rotation.z;
-      document.getElementById("aColor").value = activeObj.aColor[0];
-      document.getElementById("sColor").value = activeObj.sColor[0];
-      document.getElementById("shininess").value = activeObj.shininess;
-    }
-    setActiveSegment(activeIdx)
+            let activeObj
+            let activeIdx = 0
+            function setActiveSegment(idx) {
+                objSelectors[activeIdx].style.backgroundColor = ""
+                activeIdx = idx
+                activeObj = objects[idx]
+                objSelectors[activeIdx].style.backgroundColor = "#444444"
+                document.getElementById("xRot").value = activeObj.rotation.x
+                document.getElementById("yRot").value = activeObj.rotation.y
+                document.getElementById("zRot").value = activeObj.rotation.z
+                document.getElementById("aColor").value = activeObj.aColor[0]
+                document.getElementById("sColor").value = activeObj.sColor[0]
+                document.getElementById("shininess").value = activeObj.shininess
+            }
+            setActiveSegment(activeIdx)
 
-    function updateObj() {
-      activeObj.translation.x = Number(document.getElementById("xPos").value)
-      activeObj.translation.y = Number(document.getElementById("yPos").value)
-      activeObj.translation.z = Number(document.getElementById("zPos").value)
-      activeObj.rotation.x = Number(document.getElementById("xRot").value)
-      activeObj.rotation.y = Number(document.getElementById("yRot").value)
-      activeObj.rotation.z = Number(document.getElementById("zRot").value)
-      let a = Number(document.getElementById("aColor").value)
-      activeObj.aColor = [a, a, a]
-      let s = Number(document.getElementById("sColor").value)
-      activeObj.sColor = [s, s, s]
-      activeObj.shininess = Number(document.getElementById("shininess").value)
-      activeObj.updateMatrix()
-    }
+            function updateObj() {
+                activeObj.rotation.x = Number(
+                    document.getElementById("xRot").value
+                )
+                activeObj.rotation.y = Number(
+                    document.getElementById("yRot").value
+                )
+                activeObj.rotation.z = Number(
+                    document.getElementById("zRot").value
+                )
+                let a = Number(document.getElementById("aColor").value)
+                activeObj.aColor = [a, a, a]
+                let s = Number(document.getElementById("sColor").value)
+                activeObj.sColor = [s, s, s]
+                activeObj.shininess = Number(
+                    document.getElementById("shininess").value
+                )
+                activeObj.updateMatrix()
+            }
 
-    function initShaderProgram() {
-      try {
-        shader.vertexShader = vertEditor.value
-        shader.fragmentShader = fragEditor.value
-        shader.initialize(gl)
-      } catch (e) { console.error(e); }
-    }
-    initShaderProgram();
-    vertEditor.onkeyup = initShaderProgram;
-    fragEditor.onkeyup = initShaderProgram;
+            function initShaderProgram() {
+                try {
+                    shader.vertexShader = vertEditor.value
+                    shader.fragmentShader = fragEditor.value
+                    shader.initialize(gl)
+                } catch (e) {
+                    console.error(e)
+                }
+            }
+            initShaderProgram()
+            vertEditor.onkeyup = initShaderProgram
+            fragEditor.onkeyup = initShaderProgram
 
-    // Mouse and keyboard interactions
-    let mouseDown = false, lastX, lastY;
+            // Mouse and keyboard interactions
+            let mouseDown = false,
+                lastX,
+                lastY
 
-    canvas.addEventListener('mousedown', e => { mouseDown = true; lastX = e.clientX; lastY = e.clientY; });
-    canvas.addEventListener('mouseup', () => mouseDown = false);
-    canvas.addEventListener('mousemove', e => {
-      if (!mouseDown || !activeObj) return;
-        let dx = e.clientX - lastX;
-        let dy = e.clientY - lastY;
-        if(e.shiftKey) {
-          let xPos = Math.min(20, Math.max(-20, Number(document.getElementById("xPos").value) + dx * 0.01));
-          let yPos = Math.min(20, Math.max(-20, Number(document.getElementById("yPos").value) - dy * 0.01));
-          document.getElementById("xPos").value = xPos;
-          document.getElementById("yPos").value = yPos;
-          activeObj.translation.x = xPos
-          activeObj.translation.y = yPos
-          activeObj.updateMatrix()
-        } else {
-          let xRot = (Number(document.getElementById("xRot").value) + dy * 0.01) % (2*Math.PI);
-          let yRot = (Number(document.getElementById("yRot").value) + dx * 0.01) % (2*Math.PI);
-          xRot = xRot < 0 ? 2*Math.PI + xRot : xRot;
-          yRot = yRot < 0 ? 2*Math.PI + yRot : yRot;
-          document.getElementById("xRot").value = xRot;
-          document.getElementById("yRot").value = yRot;
-          activeObj.rotation.x = xRot
-          activeObj.rotation.y = yRot
-          activeObj.updateMatrix()
-        }
-      lastX = e.clientX; lastY = e.clientY;
-    });
+            canvas.addEventListener("mousedown", (e) => {
+                mouseDown = true
+                lastX = e.clientX
+                lastY = e.clientY
+            })
+            canvas.addEventListener("mouseup", () => (mouseDown = false))
+            canvas.addEventListener("mousemove", (e) => {
+                if (!mouseDown || !activeObj) return
+                let dx = e.clientX - lastX
+                let dy = e.clientY - lastY
+                if (e.shiftKey) {
+                    let xPos = Math.min(
+                        20,
+                        Math.max(
+                            -20,
+                            Number(document.getElementById("xPos").value) +
+                                dx * 0.01
+                        )
+                    )
+                    let yPos = Math.min(
+                        20,
+                        Math.max(
+                            -20,
+                            Number(document.getElementById("yPos").value) -
+                                dy * 0.01
+                        )
+                    )
+                    document.getElementById("xPos").value = xPos
+                    document.getElementById("yPos").value = yPos
+                    activeObj.translation.x = xPos
+                    activeObj.translation.y = yPos
+                    activeObj.updateMatrix()
+                } else {
+                    let xRot =
+                        (Number(document.getElementById("xRot").value) +
+                            dy * 0.01) %
+                        (2 * Math.PI)
+                    let yRot =
+                        (Number(document.getElementById("yRot").value) +
+                            dx * 0.01) %
+                        (2 * Math.PI)
+                    xRot = xRot < 0 ? 2 * Math.PI + xRot : xRot
+                    yRot = yRot < 0 ? 2 * Math.PI + yRot : yRot
+                    document.getElementById("xRot").value = xRot
+                    document.getElementById("yRot").value = yRot
+                    activeObj.rotation.x = xRot
+                    activeObj.rotation.y = yRot
+                    activeObj.updateMatrix()
+                }
+                lastX = e.clientX
+                lastY = e.clientY
+            })
 
-    // Projection setup
-    let fov = Math.PI / 4, aspect = canvas.width / canvas.height, near = 0.1, far = 1000;
-    let orthoSize = 2.5;
+            // Projection setup
+            let fov = Math.PI / 4,
+                aspect = canvas.width / canvas.height,
+                near = 0.1,
+                far = 1000
+            let orthoSize = 2.5
 
-    let camera = new PerspectiveCamera({fov, aspect, near, far});
-    //let camera = new OrthographicCamera({orthoSize, aspect, near, far})
-    camera.translation.z = -50
-    camera.updateModelViewMatrix()
+            let camera = new PerspectiveCamera({ fov, aspect, near, far })
+            //let camera = new OrthographicCamera({orthoSize, aspect, near, far})
+            camera.translation.z = -50
+            camera.updateModelViewMatrix()
 
-    let onresize = () => {
-      canvas.width = container.clientWidth
-      canvas.height = container.clientHeight
-      camera.aspect = container.clientWidth / container.clientHeight
-      camera.updateProjectionMatrix()
-    }
-    onresize()
+            let onresize = () => {
+                canvas.width = container.clientWidth
+                canvas.height = container.clientHeight
+                camera.aspect = container.clientWidth / container.clientHeight
+                camera.updateProjectionMatrix()
+            }
+            onresize()
 
-    document.addEventListener('keydown', e => {
-      const step = 0.2;
-      switch (e.code) {
-        case 'ArrowUp': camera.translation.y -= step; break;
-        case 'ArrowDown': camera.translation.y += step; break;
-        case 'ArrowLeft': camera.translation.x += step; break;
-        case 'ArrowRight': camera.translation.x -= step; break;
-        case 'KeyW': camera.translation.z += step; break;
-        case 'KeyS': camera.translation.z -= step; break;
-      }
-      camera.updateModelViewMatrix()
-    });
+            document.addEventListener("keydown", (e) => {
+                const step = 0.2
+                switch (e.code) {
+                    case "ArrowUp":
+                        camera.translation.y -= step
+                        break
+                    case "ArrowDown":
+                        camera.translation.y += step
+                        break
+                    case "ArrowLeft":
+                        camera.translation.x += step
+                        break
+                    case "ArrowRight":
+                        camera.translation.x -= step
+                        break
+                    case "KeyW":
+                        camera.translation.z += step
+                        break
+                    case "KeyS":
+                        camera.translation.z -= step
+                        break
+                }
+                camera.updateModelViewMatrix()
+            })
 
-    let startTime = Date.now();
+            let startTime = Date.now()
 
-    function render() {
-      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+            function render() {
+                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 
-      gl.enable(gl.DEPTH_TEST);
-      gl.clearColor(0, 0, 0, 1);
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                gl.enable(gl.DEPTH_TEST)
+                gl.clearColor(0, 0, 0, 1)
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-      // set uniform delta time
-      shader.uniforms["uTime"].value = (Date.now() - startTime)/1000
-      
-      shader.render(gl, objects, camera)
+                // set uniform delta time
+                shader.uniforms["uTime"].value = (Date.now() - startTime) / 1000
 
-      requestAnimationFrame(render)
-    }
+                shader.render(gl, objects, camera)
 
-    // Initialize when page loads
-    render()
-  </script>
-</body>
+                requestAnimationFrame(render)
+            }
 
+            // Initialize when page loads
+            render()
+        </script>
+    </body>
 </html>
