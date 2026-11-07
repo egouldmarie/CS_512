@@ -106,8 +106,8 @@ class Object extends Node {
             dColor,
             sColor,
             textureMode,
-            textureElement,
-            bumpElement
+            texSrc,
+            bumpSrc
         }
     ) {
         super()
@@ -124,8 +124,16 @@ class Object extends Node {
         this.shininess = shininess || 1.0
 
         this.textureMode = textureMode !== undefined ? textureMode : 0
-        this.textureElement = textureElement
-        this.bumpElement = bumpElement
+        if (texSrc) {
+            this.textureElement = document.createElement("img")
+            this.textureElement.crossOrigin = "anonymous"
+            this.textureElement.src = texSrc
+        }
+        if (bumpSrc) {
+            this.bumpElement = document.createElement("img")
+            this.bumpElement.crossOrigin = "anonymous"
+            this.bumpElement.src = bumpSrc
+        }
 
         this.children = []
         this.parent = undefined

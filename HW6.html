@@ -275,17 +275,6 @@
             </div>
         </div>
 
-        <img src="img/201.jpg" id="tex1" />
-        <img src="img/201_norm.jpg" id="bump1" />
-        <img src="img/202.jpg" id="tex2" />
-        <img src="img/202_norm.jpg" id="bump2" />
-        <img src="img/203.jpg" id="tex3" />
-        <img src="img/203_norm.jpg" id="bump3" />
-        <img src="img/204.jpg" id="tex4" />
-        <img src="img/204_norm.jpg" id="bump4" />
-        <img src="img/205.jpg" id="tex5" />
-        <img src="img/205_norm.jpg" id="bump5" />
-
         <script src="utils/classes.js"></script>
         <script src="utils/shaders.js"></script>
         <script src="utils/primitives.js"></script>
@@ -319,8 +308,9 @@
                 ...makeSphere(2, 32),
                 dColor: [1, 0.451, 0.808],
                 shininess: 10,
-                bumpElement: document.getElementById("bump1"),
-                textureElement: document.getElementById("tex1")
+                bumpSrc:
+                    "https://opengameart.org/sites/default/files/oga-textures/27485/201_norm.jpg",
+                texSrc: "https://opengameart.org/sites/default/files/oga-textures/27485/201.jpg"
             })
             segmentA.name = "Segment A"
 
@@ -342,8 +332,9 @@
                 ...pntsB,
                 dColor: [1, 0.816, 0],
                 shininess: 1,
-                bumpElement: document.getElementById("bump2"),
-                textureElement: document.getElementById("tex2")
+                bumpSrc:
+                    "https://opengameart.org/sites/default/files/oga-textures/27485/201_norm.jpg",
+                texSrc: "https://opengameart.org/sites/default/files/oga-textures/27485/201.jpg"
             })
             segmentB.name = "Segment B"
             segmentB.translation.y = 2
@@ -366,8 +357,9 @@
                 ...pntsC,
                 dColor: [0.392, 1, 0.392],
                 shininess: 20,
-                bumpElement: document.getElementById("bump3"),
-                textureElement: document.getElementById("tex3")
+                bumpSrc:
+                    "https://opengameart.org/sites/default/files/oga-textures/27485/201_norm.jpg",
+                texSrc: "https://opengameart.org/sites/default/files/oga-textures/27485/201.jpg"
             })
             segmentC.name = "Segment C"
             segmentC.translation.y = 5
@@ -390,8 +382,9 @@
                 ...pntsD,
                 dColor: [0.188, 0.69, 1],
                 shininess: 50,
-                bumpElement: document.getElementById("bump4"),
-                textureElement: document.getElementById("tex4")
+                bumpSrc:
+                    "https://opengameart.org/sites/default/files/oga-textures/27485/201_norm.jpg",
+                texSrc: "https://opengameart.org/sites/default/files/oga-textures/27485/201.jpg"
             })
             segmentD.name = "Segment D"
             segmentD.translation.y = 6
@@ -401,8 +394,9 @@
                 ...makeSphere(1.5, 16),
                 dColor: [0.761, 0.471, 1],
                 shininess: 100,
-                bumpElement: document.getElementById("bump5"),
-                textureElement: document.getElementById("tex5")
+                bumpSrc:
+                    "https://opengameart.org/sites/default/files/oga-textures/27485/201_norm.jpg",
+                texSrc: "https://opengameart.org/sites/default/files/oga-textures/27485/201.jpg"
             })
             segmentE.name = "SegmentE"
             segmentE.translation.y = 7.5
