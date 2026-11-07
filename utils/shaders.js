@@ -1,6 +1,7 @@
 const vertexShader = `#version 300 es
 in vec3 position;
 in vec3 normal;
+in vec2 uv;
 
 uniform float uTime; //time in sec
 uniform mat4 modelViewMatrix;
@@ -8,10 +9,12 @@ uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
 uniform mat4 modelMatrix;
 
+out vec2 vUV;
 out vec3 vNormal;
 out vec3 vPosition;
 
 void main() {
+  vUV = uv;
   vec4 pos = modelViewMatrix * modelMatrix * vec4(position, 1.0);
   vPosition = pos.xyz;
   vNormal = mat3(normalMatrix) * normal;
@@ -20,6 +23,7 @@ void main() {
 
 const fragmentShader = `#version 300 es
 precision mediump float;
+in vec2 vUV;
 in vec3 vNormal;
 in vec3 vPosition;
 

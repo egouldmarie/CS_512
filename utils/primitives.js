@@ -60,13 +60,11 @@ function makeCube(d) {
 }
 
 // sphere
-function makeSphere(radius, resolution, color = [1, 1, 1]) {
+function makeSphere(radius, resolution) {
     radius = Math.max(radius, 0)
     let wResolution = Math.floor(Math.min(64, Math.max(4, resolution)))
     let hResolution = Math.floor(wResolution / 2)
     let pos = [],
-        ind = [],
-        col = [],
         nrm = [],
         uv = []
     let delPhi = Math.PI / hResolution
@@ -76,197 +74,187 @@ function makeSphere(radius, resolution, color = [1, 1, 1]) {
         // middle of sphere
         for (let i = 0; i < wResolution; i++) {
             let theta = i * delTheta
-            let x = Math.cos(phi) * Math.cos(theta),
-                y = Math.cos(phi) * Math.sin(theta),
-                z = Math.sin(phi)
-            nrm.push(x, y, z)
-            pos.push(radius * x, radius * y, radius * z)
+            let x0 = Math.cos(phi) * Math.cos(theta),
+                y0 = Math.cos(phi) * Math.sin(theta),
+                z0 = Math.sin(phi)
+            let x1 = Math.cos(phi) * Math.cos(theta + delTheta),
+                y1 = Math.cos(phi) * Math.sin(theta + delTheta),
+                z1 = Math.sin(phi)
+            let x2 = Math.cos(phi + delPhi) * Math.cos(theta),
+                y2 = Math.cos(phi + delPhi) * Math.sin(theta),
+                z2 = Math.sin(phi + delPhi)
+            let x3 = Math.cos(phi + delPhi) * Math.cos(theta + delTheta),
+                y3 = Math.cos(phi + delPhi) * Math.sin(theta + delTheta),
+                z3 = Math.sin(phi + delPhi)
+            // 0
+            pos.push(x0 * radius, y0 * radius, z0 * radius)
+            nrm.push(x0, y0, z0)
             uv.push(i / wResolution, j / hResolution)
-            if (color) {
-                col.push(...color)
-            } else {
-                col.push(i / wResolution, j / hResolution, 0)
-            }
-            if (j > 1) {
-                if (i > 0) {
-                    let idx0 = (j - 2) * wResolution + i - 1,
-                        idx1 = (j - 2) * wResolution + i,
-                        idx2 = (j - 1) * wResolution + i - 1,
-                        idx3 = (j - 1) * wResolution + i
-                    ind.push(idx0, idx2, idx1)
-                    ind.push(idx2, idx3, idx1)
-                } else {
-                    // close sphere
-                    let idx0 = (j - 2) * wResolution + wResolution - 1,
-                        idx1 = (j - 2) * wResolution + 0,
-                        idx2 = (j - 1) * wResolution + wResolution - 1,
-                        idx3 = (j - 1) * wResolution + 0
-                    ind.push(idx0, idx2, idx1)
-                    ind.push(idx2, idx3, idx1)
-                }
-            }
+            // 2
+            pos.push(x2 * radius, y2 * radius, z2 * radius)
+            nrm.push(x2, y2, z2)
+            uv.push(i / wResolution, (j + 1) / hResolution)
+            // 1
+            pos.push(x1 * radius, y1 * radius, z1 * radius)
+            nrm.push(x1, y1, z1)
+            uv.push((i + 1) / wResolution, j / hResolution)
+            // 2
+            pos.push(x2 * radius, y2 * radius, z2 * radius)
+            nrm.push(x2, y2, z2)
+            uv.push(i / wResolution, (j + 1) / hResolution)
+            // 3
+            pos.push(x3 * radius, y3 * radius, z3 * radius)
+            nrm.push(x3, y3, z3)
+            uv.push((i + 1) / wResolution, (j + 1) / hResolution)
+            // 1
+            pos.push(x1 * radius, y1 * radius, z1 * radius)
+            nrm.push(x1, y1, z1)
+            uv.push((i + 1) / wResolution, j / hResolution)
         }
     }
 
     // bottom of sphere
-    pos.push(0, 0, -radius)
-    nrm.push(0, 0, -1)
-    uv.push(0.5, 0)
-    if (color) {
-        col.push(...color)
-    } else {
-        col.push(0.5, 0, 0)
-    }
-    let idx2 = (pos.length - 1) / 3
+    let phi = -Math.PI / 2 + delPhi
     for (let i = 0; i < wResolution; i++) {
-        if (i > 0) {
-            let idx0 = i - 1,
-                idx1 = i
-            ind.push(idx0, idx1, idx2)
-        } else {
-            // close sphere
-            let idx0 = wResolution - 1,
-                idx1 = 0
-            ind.push(idx0, idx1, idx2)
-        }
+        let theta = i * delTheta
+        let x1 = Math.cos(phi) * Math.cos(theta),
+            y1 = Math.cos(phi) * Math.sin(theta),
+            z1 = Math.sin(phi)
+        let x2 = Math.cos(phi) * Math.cos(theta + delTheta),
+            y2 = Math.cos(phi) * Math.sin(theta + delTheta),
+            z2 = Math.sin(phi)
+        // 0
+        pos.push(0, 0, -radius)
+        nrm.push(0, 0, -1)
+        uv.push(0.5, 0)
+        // 1
+        pos.push(x1 * radius, y1 * radius, z1 * radius)
+        nrm.push(x1, y1, z1)
+        uv.push(i / wResolution, 1 / hResolution)
+        // 2
+        pos.push(x2 * radius, y2 * radius, z2 * radius)
+        nrm.push(x2, y2, z2)
+        uv.push((i + 1) / wResolution, 1 / hResolution)
     }
 
     // top of sphere
-    pos.push(0, 0, radius)
-    nrm.push(0, 0, 1)
-    uv.push(0.5, 1)
-    if (color) {
-        col.push(...color)
-    } else {
-        col.push(1, 1, 0)
-    }
-    idx2 = (pos.length - 1) / 3
+    phi = Math.PI / 2 - delPhi
     for (let i = 0; i < wResolution; i++) {
-        if (i > 0) {
-            let idx0 = (hResolution - 2) * wResolution + i - 1,
-                idx1 = (hResolution - 2) * wResolution + i
-            ind.push(idx0, idx1, idx2)
-        } else {
-            // close sphere
-            let idx0 = (hResolution - 2) * wResolution + wResolution - 1,
-                idx1 = (hResolution - 2) * wResolution + 0
-            ind.push(idx0, idx1, idx2)
-        }
+        let theta = i * delTheta
+        let x1 = Math.cos(phi) * Math.cos(theta),
+            y1 = Math.cos(phi) * Math.sin(theta),
+            z1 = Math.sin(phi)
+        let x2 = Math.cos(phi) * Math.cos(theta + delTheta),
+            y2 = Math.cos(phi) * Math.sin(theta + delTheta),
+            z2 = Math.sin(phi)
+        // 0
+        pos.push(0, 0, radius)
+        nrm.push(0, 0, 1)
+        uv.push(0.5, 1)
+        // 1
+        pos.push(x1 * radius, y1 * radius, z1 * radius)
+        nrm.push(x1, y1, z1)
+        uv.push(i / wResolution, 1 - 1 / hResolution)
+        // 2
+        pos.push(x2 * radius, y2 * radius, z2 * radius)
+        nrm.push(x2, y2, z2)
+        uv.push((i + 1) / wResolution, 1 - 1 / hResolution)
     }
 
     const positions = new Float32Array(pos)
-    const indices = new Uint16Array(ind)
     const normals = new Float32Array(nrm)
-    const colors = new Float32Array(col)
     const uvs = new Float32Array(uv)
 
-    return { positions, indices, normals, colors, uvs }
+    return { positions, normals, uvs }
 }
 
 // prism
-function makePrism(radius, height, sides, color) {
+function makePrism(radius, height, sides) {
     sides = Math.floor(Math.max(3, sides))
 
     let pos = [],
-        ind = [],
-        col = [],
         nrm = [],
         uv = []
-    for (let j = 0; j <= 1; j++) {
-        let z = -height / 2 + j * height
-        for (let i = 0; i < sides; i++) {
-            let theta = i * ((2 * Math.PI) / sides)
-            let x = Math.cos(theta),
-                y = Math.sin(theta)
-            nrm.push(x, y, 0)
-            pos.push(radius * x, radius * y, z)
-            uv.push(i / sides, j)
-            if (color) {
-                col.push(...color)
-            } else {
-                col.push(i / sides, j, 0)
-            }
-            if (j > 0) {
-                if (i > 0) {
-                    let idx0 = (j - 1) * sides + i - 1,
-                        idx1 = (j - 1) * sides + i,
-                        idx2 = j * sides + i - 1,
-                        idx3 = j * sides + i
-                    ind.push(idx0, idx2, idx1)
-                    ind.push(idx2, idx3, idx1)
-                } else {
-                    // close prism
-                    let idx0 = (j - 1) * sides + sides - 1,
-                        idx1 = (j - 1) * sides + 0,
-                        idx2 = j * sides + sides - 1,
-                        idx3 = j * sides + 0
-                    ind.push(idx0, idx2, idx1)
-                    ind.push(idx2, idx3, idx1)
-                }
-            }
+    let delTheta = (2 * Math.PI) / sides
+    for (let i = 0; i < sides; i++) {
+        let theta = i * delTheta
+        let x0 = Math.cos(theta),
+            y0 = Math.sin(theta)
+        let x1 = Math.cos(theta + delTheta),
+            y1 = Math.sin(theta + delTheta)
+
+        pos.push(x0 * radius, y0 * radius, height / 2) // 0
+        pos.push(x0 * radius, y0 * radius, -height / 2) // 2
+        pos.push(x1 * radius, y1 * radius, height / 2) // 1
+        pos.push(x0 * radius, y0 * radius, -height / 2) // 2
+        pos.push(x1 * radius, y1 * radius, -height / 2) // 3
+        pos.push(x1 * radius, y1 * radius, height / 2) // 1
+
+        if (sides >= 16) {
+            nrm.push(x0, y0, 0) // 0
+            nrm.push(x0, y0, 0) // 2
+            nrm.push(x1, y1, 0) // 1
+            nrm.push(x0, y0, 0) // 2
+            nrm.push(x1, y1, 0) // 3
+            nrm.push(x1, y1, 0) // 1
+        } else {
+            let nx = Math.cos(theta + delTheta / 2),
+                ny = Math.sin(theta + delTheta / 2)
+            nrm.push(nx, ny, 0) // 0
+            nrm.push(nx, ny, 0) // 2
+            nrm.push(nx, ny, 0) // 1
+            nrm.push(nx, ny, 0) // 2
+            nrm.push(nx, ny, 0) // 3
+            nrm.push(nx, ny, 0) // 1
         }
+
+        uv.push(i / sides, 1) // 0
+        uv.push(i / sides, 0) // 2
+        uv.push((i + 1) / sides, 1) // 1
+        uv.push(i / sides, 0) // 2
+        uv.push((i + 1) / sides, 0) // 3
+        uv.push((i + 1) / sides, 1) // 1
     }
 
-    if (sides > 3) {
-        // center bottom
+    for (let i = 0; i < sides; i++) {
+        let theta = i * delTheta
+        let x0 = Math.cos(theta),
+            y0 = Math.sin(theta)
+        let x1 = Math.cos(theta + delTheta),
+            y1 = Math.sin(theta + delTheta)
+
+        // bottom
+        // 0
         pos.push(0, 0, -height / 2)
         nrm.push(0, 0, -1)
-        uv.push(0.5, 0)
-        if (color) {
-            col.push(...color)
-        } else {
-            col.push(0.5, 0, 0)
-        }
+        uv.push(0.5, 0.5)
+        // 1
+        pos.push(x0 * radius, y0 * radius, -height / 2)
+        nrm.push(0, 0, -1)
+        uv.push(x0 + 0.5, y0 + 0.5)
+        // 2
+        pos.push(x1 * radius, y1 * radius, -height / 2)
+        nrm.push(0, 0, -1)
+        uv.push(x1 + 0.5, y1 + 0.5)
 
-        let idx2 = (pos.length - 1) / 3
-        for (let i = 0; i < sides; i++) {
-            if (i > 0) {
-                let idx0 = i - 1,
-                    idx1 = i
-                ind.push(idx0, idx1, idx2)
-            } else {
-                // close prism
-                let idx0 = sides - 1,
-                    idx1 = 0
-                ind.push(idx0, idx1, idx2)
-            }
-        }
-
-        // center top
+        // top
+        // 0
         pos.push(0, 0, height / 2)
         nrm.push(0, 0, 1)
-        uv.push(0.5, 1)
-        if (color) {
-            col.push(...color)
-        } else {
-            col.push(0.5, 1, 0)
-        }
-
-        idx2 = (pos.length - 1) / 3
-        for (let i = 0; i < sides; i++) {
-            if (i > 0) {
-                let idx0 = sides + i - 1,
-                    idx1 = sides + i
-                ind.push(idx0, idx1, idx2)
-            } else {
-                // close sphere
-                let idx0 = sides + sides - 1,
-                    idx1 = sides + 0
-                ind.push(idx0, idx1, idx2)
-            }
-        }
-    } else {
-        // bottom
-        ind.push(0, 1, 2)
-        // top
-        ind.push(3, 4, 5)
+        uv.push(0.5, 0.5)
+        // 1
+        pos.push(x0 * radius, y0 * radius, height / 2)
+        nrm.push(0, 0, 1)
+        uv.push(x0 + 0.5, y0 + 0.5)
+        // 2
+        pos.push(x1 * radius, y1 * radius, height / 2)
+        nrm.push(0, 0, 1)
+        uv.push(x1 + 0.5, y1 + 0.5)
     }
 
     const positions = new Float32Array(pos)
     const normals = new Float32Array(nrm)
-    const indices = new Uint16Array(ind)
-    const colors = new Float32Array(col)
     const uvs = new Float32Array(uv)
 
-    return { positions, indices, normals, colors, uvs }
+    return { positions, normals, uvs }
 }

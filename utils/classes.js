@@ -3,9 +3,6 @@ class Node {
         this.parent = undefined
         this.children = []
 
-        this.children = []
-        this.parent = undefined
-
         this.matrix = mat4Identity()
         this.modelMatrix = mat4Identity()
         this.normalMatrix = mat4Identity()
@@ -134,9 +131,11 @@ class Object extends Node {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.positionBuffer)
         gl.bufferData(gl.ARRAY_BUFFER, this.positions, gl.STATIC_DRAW)
 
-        this.colorBuffer = gl.createBuffer()
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
-        gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW)
+        if (this.colors) {
+            this.colorBuffer = gl.createBuffer()
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW)
+        }
 
         if (this.normals) {
             this.normalBuffer = gl.createBuffer()
@@ -438,7 +437,7 @@ class Shader {
                     0
                 )
             } else {
-                gl.drawArrays(this.mode, 0, objects[o].positions.length)
+                gl.drawArrays(this.mode, 0, objects[o].positions.length / 3)
             }
         }
     }
