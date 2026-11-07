@@ -162,27 +162,31 @@ class Object extends Node {
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW)
         }
 
-        this.texture = gl.createTexture()
-        gl.bindTexture(gl.TEXTURE_2D, this.texture)
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            this.textureElement
-        )
+        this.textureElement.onload = () => {
+            this.texture = gl.createTexture()
+            gl.bindTexture(gl.TEXTURE_2D, this.texture)
+            gl.texImage2D(
+                gl.TEXTURE_2D,
+                0,
+                gl.RGBA,
+                gl.RGBA,
+                gl.UNSIGNED_BYTE,
+                this.textureElement
+            )
+        }
 
-        this.bumpTexture = gl.createTexture()
-        gl.bindTexture(gl.TEXTURE_2D, this.bumpTexture)
-        gl.texImage2D(
-            gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            this.bumpElement
-        )
+        this.bumpElement.onload = () => {
+            this.bumpTexture = gl.createTexture()
+            gl.bindTexture(gl.TEXTURE_2D, this.bumpTexture)
+            gl.texImage2D(
+                gl.TEXTURE_2D,
+                0,
+                gl.RGBA,
+                gl.RGBA,
+                gl.UNSIGNED_BYTE,
+                this.bumpElement
+            )
+        }
     }
 }
 
