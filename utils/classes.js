@@ -104,7 +104,10 @@ class Object extends Node {
             shininess,
             aColor,
             dColor,
-            sColor
+            sColor,
+            textureMode,
+            textureElement,
+            bumpElement
         }
     ) {
         super()
@@ -119,6 +122,10 @@ class Object extends Node {
         this.dColor = dColor || [1.0, 1.0, 1.0]
         this.sColor = sColor || [1.0, 1.0, 1.0]
         this.shininess = shininess || 1.0
+
+        this.textureMode = textureMode !== undefined ? textureMode : 0
+        this.textureElement = textureElement
+        this.bumpElement = bumpElement
 
         this.children = []
         this.parent = undefined
@@ -153,6 +160,32 @@ class Object extends Node {
             this.indexBuffer = gl.createBuffer()
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer)
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW)
+        }
+
+        this.textureElement.onload = () => {
+            this.texture = gl.createTexture()
+            gl.bindTexture(gl.TEXTURE_2D, this.texture)
+            gl.texImage2D(
+                gl.TEXTURE_2D,
+                0,
+                gl.RGBA,
+                gl.RGBA,
+                gl.UNSIGNED_BYTE,
+                this.textureElement
+            )
+        }
+
+        this.bumpElement.onload = () => {
+            this.bumpTexture = gl.createTexture()
+            gl.bindTexture(gl.TEXTURE_2D, this.bumpTexture)
+            gl.texImage2D(
+                gl.TEXTURE_2D,
+                0,
+                gl.RGBA,
+                gl.RGBA,
+                gl.UNSIGNED_BYTE,
+                this.bumpElement
+            )
         }
     }
 }
@@ -319,6 +352,14 @@ class Shader {
             this.program,
             "sColor"
         )
+        this.uniformLocations["textureMode"] = gl.getUniformLocation(
+            this.program,
+            "textureMode"
+        )
+        this.uniformLocations["uTexture"] = gl.getUniformLocation(
+            this.program,
+            "uTexture"
+        )
         for (let i in this.uniforms) {
             this.uniformLocations[i] = gl.getUniformLocation(this.program, i)
         }
@@ -400,6 +441,18 @@ class Shader {
                 this.uniformLocations["shininess"],
                 objects[o].shininess
             )
+
+            // texture mode
+            gl.uniform1f(
+                this.uniformLocations["textureMode"],
+                objects[o].textureMode
+            )
+
+            if (objects[o].texture) {
+                gl.activeTexture(gl.TEXTURE0)
+                gl.bindTexture(gl.TEXTURE_2D, objects[o].texture)
+                gl.uniform1i(this.uniformLocations["uTexture"], 0)
+            }
 
             // positions
             gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].positionBuffer)

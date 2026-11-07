@@ -190,16 +190,32 @@
                             <table>
                                 <tr class="segments">
                                     <td
-                                        id="normalMode"
+                                        id="bumpMode"
                                         onclick="setTextureMappingMode(0)"
+                                    >
+                                        Bump Mapping
+                                    </td>
+                                    <td
+                                        id="normalMode"
+                                        onclick="setTextureMappingMode(1)"
                                     >
                                         Normal Mapping
                                     </td>
-                                    <td
-                                        id="bumpMode"
-                                        onclick="setTextureMappingMode(1)"
-                                    >
-                                        Bump Mapping
+                                </tr>
+                            </table>
+                            <table>
+                                <tr>
+                                    <td>Bump Scale:</td>
+                                    <td>
+                                        <input
+                                            type="range"
+                                            min="0.1"
+                                            max="10"
+                                            step="0.1"
+                                            value="6"
+                                            id="bumpScale"
+                                            oninput="updateObj()"
+                                        />
                                     </td>
                                 </tr>
                             </table>
@@ -304,10 +320,16 @@
                 uTime: { type: "float", value: 0 }
             })
 
+            let texA = document.createElement("img")
+            texA.src = "./img/201.jpg"
+            let bumpA = document.createElement("img")
+            bumpA.src = "./img/201_norm.jpg"
             let segmentA = new Object(gl, {
                 ...makeSphere(2, 32),
                 dColor: [1, 0.451, 0.808],
-                shininess: 10
+                shininess: 10,
+                bumpElement: bumpA,
+                textureElement: texA
             })
             segmentA.name = "Segment A"
 
@@ -325,10 +347,16 @@
                 pntsB.normals[i * 3 + 1] = cx * ny - sx * nz
                 pntsB.normals[i * 3 + 2] = sx * ny + cx * nz
             }
+            let texB = document.createElement("img")
+            texB.src = "./img/201.jpg"
+            let bumpB = document.createElement("img")
+            bumpB.src = "./img/201_norm.jpg"
             let segmentB = new Object(gl, {
                 ...pntsB,
                 dColor: [1, 0.816, 0],
-                shininess: 1
+                shininess: 1,
+                bumpElement: bumpB,
+                textureElement: texB
             })
             segmentB.name = "Segment B"
             segmentB.translation.y = 2
@@ -350,7 +378,9 @@
             let segmentC = new Object(gl, {
                 ...pntsC,
                 dColor: [0.392, 1, 0.392],
-                shininess: 20
+                shininess: 20,
+                bumpElement: document.createElement("img"),
+                textureElement: document.createElement("img")
             })
             segmentC.name = "Segment C"
             segmentC.translation.y = 5
@@ -372,7 +402,9 @@
             let segmentD = new Object(gl, {
                 ...pntsD,
                 dColor: [0.188, 0.69, 1],
-                shininess: 50
+                shininess: 50,
+                bumpElement: document.createElement("img"),
+                textureElement: document.createElement("img")
             })
             segmentD.name = "Segment D"
             segmentD.translation.y = 6
@@ -381,7 +413,9 @@
             let segmentE = new Object(gl, {
                 ...makeSphere(1.5, 16),
                 dColor: [0.761, 0.471, 1],
-                shininess: 100
+                shininess: 100,
+                bumpElement: document.createElement("img"),
+                textureElement: document.createElement("img")
             })
             segmentE.name = "SegmentE"
             segmentE.translation.y = 7.5
@@ -403,15 +437,38 @@
                 document.getElementById("aColor").value = activeObj.aColor[0]
                 document.getElementById("sColor").value = activeObj.sColor[0]
                 document.getElementById("shininess").value = activeObj.shininess
-                if (activeObj.textureMode === 0) {
+                setTextureMappingMode()
+            }
+            setActiveSegment(activeIdx)
+
+            function setTextureMappingMode(mode) {
+                if (mode !== undefined) {
+                    if (activeObj.textureMode === mode) {
+                        activeObj.textureMode = -1
+                    } else {
+                        activeObj.textureMode = mode
+                    }
+                }
+                if (activeObj.textureMode === -1) {
+                    document.getElementById("bumpMode").style.backgroundColor =
+                        ""
+                    document.getElementById(
+                        "normalMode"
+                    ).style.backgroundColor = ""
+                } else if (activeObj.textureMode === 0) {
+                    document.getElementById("bumpMode").style.backgroundColor =
+                        "#444444"
                     document.getElementById(
                         "normalMode"
                     ).style.backgroundColor = ""
                 } else {
-                    document.getElementById("")
+                    document.getElementById("bumpMode").style.backgroundColor =
+                        ""
+                    document.getElementById(
+                        "normalMode"
+                    ).style.backgroundColor = "#444444"
                 }
             }
-            setActiveSegment(activeIdx)
 
             function updateObj() {
                 activeObj.rotation.x = Number(
@@ -431,22 +488,6 @@
                     document.getElementById("shininess").value
                 )
                 activeObj.updateMatrix()
-            }
-
-            let textureModes = [
-                document.getElementById("normalMode"),
-                document.getElementById("bumpMode")
-            ]
-            let activeModeIdx = 0
-            function setTextureMappingMode(mode) {
-                textureModes[activeModeIdx].style.backgroundColor = ""
-                activeModeIdx = mode
-                textureModes[mode].style.backgroundColor = "#444444"
-            }
-            setTextureMappingMode(0)
-
-            function updateTexture() {
-                //
             }
 
             function initShaderProgram() {

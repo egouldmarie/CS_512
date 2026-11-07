@@ -4,6 +4,7 @@ in vec3 normal;
 in vec2 uv;
 
 uniform float uTime; //time in sec
+
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
@@ -33,13 +34,42 @@ uniform vec3 sColor;
 
 uniform float shininess;
 
+uniform float bumpScale;
+uniform float textureMode;
+
+uniform sampler2D uTexture;
+uniform sampler2D uBumpTexture;
+
 out vec4 fragColor;
 
+float height(vec2 uv) {
+  vec3 c = texture(uTexture, uv).rgb;
+  return 1.0 - dot(c, vec3(0.299, 0.587, 0.114));
+}
+
 void main() {
+  // texture mode
+  vec3 diffColor;
+  vec3 N = normalize(vNormal);
+  if(textureMode == -1.) {
+    diffColor = dColor;
+  } else {
+    diffColor = texture(uTexture, vUV).rgb;
+    if(textureMode == 0.) {
+      // Bump mapping: tilt the normal against the gradient of the height field
+      vec2 du = vec2(1.0 / float(textureSize(uTexture, 0).x), 0.0);
+      vec2 dv = vec2(0.0, 1.0 / float(textureSize(uTexture, 0).y));
+      float dhdu = (height(vUV + du) - height(vUV - du)) * 0.5;
+      float dhdv = (height(vUV + dv) - height(vUV - dv)) * 0.5;
+      N = normalize(vec3(-bumpScale * dhdu, -bumpScale * dhdv, 1.0));
+    } else {
+      N = normalize(texture(uBumpTexture, vUV).rgb * 2.0 - 1.0);
+    }
+  }
+
   // ambient coefficient
   vec3 Ka = vec3(0.1);
 
-  vec3 N = normalize(vNormal);
   vec3 V = normalize(-vPosition); // camera sits at the origin
 
   // light 1 (white light)
