@@ -186,20 +186,26 @@
                             </table>
                         </div>
                         <div>
-                            <b>Textures</b><br />
+                            <b>Texture Mapping</b><br />
                             <table>
                                 <tr class="segments">
+                                    <td
+                                        id="colorMode"
+                                        onclick="setTextureMappingMode(-1)"
+                                    >
+                                        Color (none)
+                                    </td>
                                     <td
                                         id="bumpMode"
                                         onclick="setTextureMappingMode(0)"
                                     >
-                                        Bump Mapping
+                                        Bump
                                     </td>
                                     <td
                                         id="normalMode"
                                         onclick="setTextureMappingMode(1)"
                                     >
-                                        Normal Mapping
+                                        Normal
                                     </td>
                                 </tr>
                             </table>
@@ -426,18 +432,24 @@
                     }
                 }
                 if (activeObj.textureMode === -1) {
+                    document.getElementById("colorMode").style.backgroundColor =
+                        "#444444"
                     document.getElementById("bumpMode").style.backgroundColor =
                         ""
                     document.getElementById(
                         "normalMode"
                     ).style.backgroundColor = ""
                 } else if (activeObj.textureMode === 0) {
+                    document.getElementById("colorMode").style.backgroundColor =
+                        ""
                     document.getElementById("bumpMode").style.backgroundColor =
                         "#444444"
                     document.getElementById(
                         "normalMode"
                     ).style.backgroundColor = ""
                 } else {
+                    document.getElementById("colorMode").style.backgroundColor =
+                        ""
                     document.getElementById("bumpMode").style.backgroundColor =
                         ""
                     document.getElementById(
