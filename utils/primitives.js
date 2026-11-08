@@ -66,6 +66,7 @@ function makeSphere(radius, resolution) {
     let hResolution = Math.floor(wResolution / 2)
     let pos = [],
         nrm = [],
+        tan = [],
         uv = []
     let delPhi = Math.PI / hResolution
     let delTheta = (2 * Math.PI) / wResolution
@@ -86,29 +87,53 @@ function makeSphere(radius, resolution) {
             let x3 = Math.cos(phi + delPhi) * Math.cos(theta + delTheta),
                 y3 = Math.cos(phi + delPhi) * Math.sin(theta + delTheta),
                 z3 = Math.sin(phi + delPhi)
+
+            // at theta = 0, phi = 0, tangent T = [0 0 1]
+            // applying a rotation around the y-axis by phi then
+            // a rotation around the x-axis by theta should give
+            // the transformed tangent line for the new coordinate
+            let tx0 = Math.cos(theta) * Math.sin(phi),
+                ty0 = Math.sin(theta) * Math.sin(phi),
+                tz0 = Math.cos(phi)
+            let tx1 = Math.cos(theta + delTheta) * Math.sin(phi),
+                ty1 = Math.sin(theta + delTheta) * Math.sin(phi),
+                tz1 = Math.cos(phi)
+            let tx2 = Math.cos(theta) * Math.sin(phi + delPhi),
+                ty2 = Math.sin(theta) * Math.sin(phi + delPhi),
+                tz2 = Math.cos(phi + delPhi)
+            let tx3 = Math.cos(theta + delTheta) * Math.sin(phi + delPhi),
+                ty3 = Math.sin(theta + delTheta) * Math.sin(phi + delPhi),
+                tz3 = Math.cos(phi + delPhi)
+
             // 0
             pos.push(x0 * radius, y0 * radius, z0 * radius)
             nrm.push(x0, y0, z0)
+            tan.push(tx0, ty0, tz0)
             uv.push(i / wResolution, j / hResolution)
             // 2
             pos.push(x2 * radius, y2 * radius, z2 * radius)
             nrm.push(x2, y2, z2)
+            tan.push(tx2, ty2, tz2)
             uv.push(i / wResolution, (j + 1) / hResolution)
             // 1
             pos.push(x1 * radius, y1 * radius, z1 * radius)
             nrm.push(x1, y1, z1)
+            tan.push(tx1, ty1, tz1)
             uv.push((i + 1) / wResolution, j / hResolution)
             // 2
             pos.push(x2 * radius, y2 * radius, z2 * radius)
             nrm.push(x2, y2, z2)
+            tan.push(tx2, ty2, tz2)
             uv.push(i / wResolution, (j + 1) / hResolution)
             // 3
             pos.push(x3 * radius, y3 * radius, z3 * radius)
             nrm.push(x3, y3, z3)
+            tan.push(tx3, ty3, tz3)
             uv.push((i + 1) / wResolution, (j + 1) / hResolution)
             // 1
             pos.push(x1 * radius, y1 * radius, z1 * radius)
             nrm.push(x1, y1, z1)
+            tan.push(tx1, ty1, tz1)
             uv.push((i + 1) / wResolution, j / hResolution)
         }
     }
@@ -123,17 +148,26 @@ function makeSphere(radius, resolution) {
         let x2 = Math.cos(phi) * Math.cos(theta + delTheta),
             y2 = Math.cos(phi) * Math.sin(theta + delTheta),
             z2 = Math.sin(phi)
+        let tx1 = Math.cos(theta) * Math.sin(phi),
+            ty1 = Math.sin(theta) * Math.sin(phi),
+            tz1 = Math.cos(phi)
+        let tx2 = Math.cos(theta + delTheta) * Math.sin(phi),
+            ty2 = Math.sin(theta + delTheta) * Math.sin(phi),
+            tz2 = Math.cos(phi)
         // 0
         pos.push(0, 0, -radius)
         nrm.push(0, 0, -1)
+        tan.push(0, 0, 0)
         uv.push(0.5, 0)
         // 1
         pos.push(x1 * radius, y1 * radius, z1 * radius)
         nrm.push(x1, y1, z1)
+        tan.push(tx1, ty1, tz1)
         uv.push(i / wResolution, 1 / hResolution)
         // 2
         pos.push(x2 * radius, y2 * radius, z2 * radius)
         nrm.push(x2, y2, z2)
+        tan.push(tx2, ty2, tz2)
         uv.push((i + 1) / wResolution, 1 / hResolution)
     }
 
@@ -147,25 +181,35 @@ function makeSphere(radius, resolution) {
         let x2 = Math.cos(phi) * Math.cos(theta + delTheta),
             y2 = Math.cos(phi) * Math.sin(theta + delTheta),
             z2 = Math.sin(phi)
+        let tx1 = Math.cos(theta) * Math.sin(phi),
+            ty1 = Math.sin(theta) * Math.sin(phi),
+            tz1 = Math.cos(phi)
+        let tx2 = Math.cos(theta + delTheta) * Math.sin(phi),
+            ty2 = Math.sin(theta + delTheta) * Math.sin(phi),
+            tz2 = Math.cos(phi)
         // 0
         pos.push(0, 0, radius)
         nrm.push(0, 0, 1)
+        tan.push(0, 0, 0)
         uv.push(0.5, 1)
         // 1
         pos.push(x1 * radius, y1 * radius, z1 * radius)
         nrm.push(x1, y1, z1)
+        tan.push(tx1, ty1, tz1)
         uv.push(i / wResolution, 1 - 1 / hResolution)
         // 2
         pos.push(x2 * radius, y2 * radius, z2 * radius)
         nrm.push(x2, y2, z2)
+        tan.push(tx2, ty2, tz2)
         uv.push((i + 1) / wResolution, 1 - 1 / hResolution)
     }
 
     const positions = new Float32Array(pos)
     const normals = new Float32Array(nrm)
+    const tangents = new Float32Array(tan)
     const uvs = new Float32Array(uv)
 
-    return { positions, normals, uvs }
+    return { positions, normals, tangents, uvs }
 }
 
 // prism
@@ -174,6 +218,7 @@ function makePrism(radius, height, sides) {
 
     let pos = [],
         nrm = [],
+        tan = [],
         uv = []
     let delTheta = (2 * Math.PI) / sides
     for (let i = 0; i < sides; i++) {
@@ -208,6 +253,13 @@ function makePrism(radius, height, sides) {
             nrm.push(nx, ny, 0) // 1
         }
 
+        tan.push(0, 0, 1) // 0
+        tan.push(0, 0, 1) // 2
+        tan.push(0, 0, 1) // 1
+        tan.push(0, 0, 1) // 2
+        tan.push(0, 0, 1) // 3
+        tan.push(0, 0, 1) // 1
+
         uv.push(i / sides, 1) // 0
         uv.push(i / sides, 0) // 2
         uv.push((i + 1) / sides, 1) // 1
@@ -227,34 +279,41 @@ function makePrism(radius, height, sides) {
         // 0
         pos.push(0, 0, -height / 2)
         nrm.push(0, 0, -1)
+        tan.push(1, 0, 0)
         uv.push(0.5, 0.5)
         // 1
         pos.push(x0 * radius, y0 * radius, -height / 2)
         nrm.push(0, 0, -1)
+        tan.push(1, 0, 0)
         uv.push(x0 + 0.5, y0 + 0.5)
         // 2
         pos.push(x1 * radius, y1 * radius, -height / 2)
         nrm.push(0, 0, -1)
+        tan.push(1, 0, 0)
         uv.push(x1 + 0.5, y1 + 0.5)
 
         // top
         // 0
         pos.push(0, 0, height / 2)
         nrm.push(0, 0, 1)
+        tan.push(-1, 0, 0)
         uv.push(0.5, 0.5)
         // 1
         pos.push(x0 * radius, y0 * radius, height / 2)
         nrm.push(0, 0, 1)
+        tan.push(-1, 0, 0)
         uv.push(x0 + 0.5, y0 + 0.5)
         // 2
         pos.push(x1 * radius, y1 * radius, height / 2)
         nrm.push(0, 0, 1)
+        tan.push(-1, 0, 0)
         uv.push(x1 + 0.5, y1 + 0.5)
     }
 
     const positions = new Float32Array(pos)
     const normals = new Float32Array(nrm)
+    const tangents = new Float32Array(tan)
     const uvs = new Float32Array(uv)
 
-    return { positions, normals, uvs }
+    return { positions, normals, tangents, uvs }
 }

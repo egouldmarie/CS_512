@@ -100,6 +100,7 @@ class Object extends Node {
             colors,
             indices,
             normals,
+            tangents,
             positions,
             shininess,
             aColor,
@@ -116,6 +117,7 @@ class Object extends Node {
         this.colors = colors
         this.indices = indices
         this.normals = normals
+        this.tangents = tangents
         this.positions = positions
 
         this.aColor = aColor || [1.0, 1.0, 1.0]
@@ -156,6 +158,12 @@ class Object extends Node {
             this.normalBuffer = gl.createBuffer()
             gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer)
             gl.bufferData(gl.ARRAY_BUFFER, this.normals, gl.STATIC_DRAW)
+        }
+
+        if (this.tangents) {
+            this.tangentBuffer = gl.createBuffer()
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.tangentBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, this.tangents, gl.STATIC_DRAW)
         }
 
         if (this.uvs) {
@@ -323,6 +331,7 @@ class Shader {
         this.posLoc = gl.getAttribLocation(this.program, "position")
         this.colorLoc = gl.getAttribLocation(this.program, "color")
         this.normLoc = gl.getAttribLocation(this.program, "normal")
+        this.tanLoc = gl.getAttribLocation(this.program, "tangent")
         this.uvLoc = gl.getAttribLocation(this.program, "uv")
     }
 
@@ -499,6 +508,13 @@ class Shader {
                 gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].normalBuffer)
                 gl.enableVertexAttribArray(this.normLoc)
                 gl.vertexAttribPointer(this.normLoc, 3, gl.FLOAT, false, 0, 0)
+            }
+
+            // tangents
+            if (this.tanLoc >= 0) {
+                gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].tangentBuffer)
+                gl.enableVertexAttribArray(this.tanLoc)
+                gl.vertexAttribPointer(this.tanLoc, 3, gl.FLOAT, false, 0, 0)
             }
 
             // uvs

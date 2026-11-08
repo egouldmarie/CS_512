@@ -1,5 +1,6 @@
 const vertexShader = `#version 300 es
 in vec3 position;
+in vec3 tangent;
 in vec3 normal;
 in vec2 uv;
 
@@ -12,6 +13,7 @@ uniform mat4 modelMatrix;
 
 out vec2 vUV;
 out vec3 vNormal;
+out vec3 vTangent;
 out vec3 vPosition;
 
 void main() {
@@ -19,6 +21,7 @@ void main() {
   vec4 pos = modelViewMatrix * modelMatrix * vec4(position, 1.0);
   vPosition = pos.xyz;
   vNormal = mat3(normalMatrix) * normal;
+  vTangent = mat3(normalMatrix) * tangent;
   gl_Position = projectionMatrix * pos;
 }`
 
@@ -26,6 +29,7 @@ const fragmentShader = `#version 300 es
 precision mediump float;
 in vec2 vUV;
 in vec3 vNormal;
+in vec3 vTangent;
 in vec3 vPosition;
 
 uniform vec3 aColor;
@@ -48,29 +52,36 @@ float height(vec2 uv) {
 }
 
 void main() {
-  // texture mode
-  vec3 diffColor;
+  // Tangent frame (T, B, N)
   vec3 N = normalize(vNormal);
+  vec3 T = normalize(vTangent - dot(vTangent, N) * N);
+  vec3 B = cross(N, T);
+  mat3 TBN = mat3(T, B, N);
+
+  // texture mode
+  vec3 diffuseColor;
+  vec3 n;
   if(textureMode == -1.) {
-    diffColor = dColor;
+    diffuseColor = dColor;
   } else {
-    diffColor = texture(uTexture, vUV).rgb;
+    diffuseColor = texture(uTexture, vUV).rgb;
     if(textureMode == 0.) {
       // Bump mapping: tilt the normal against the gradient of the height field
       vec2 du = vec2(1.0 / float(textureSize(uTexture, 0).x), 0.0);
       vec2 dv = vec2(0.0, 1.0 / float(textureSize(uTexture, 0).y));
       float dhdu = (height(vUV + du) - height(vUV - du)) * 0.5;
       float dhdv = (height(vUV + dv) - height(vUV - dv)) * 0.5;
-      N = normalize(N + vec3(-bumpScale * dhdu, -bumpScale * dhdv, 1.0));
+      n = normalize(vec3(-bumpScale * dhdu, -bumpScale * dhdv, 1.0));
     } else {
-      N = normalize(N + texture(uBumpTexture, vUV).rgb * 2.0 - 1.0);
+      n = normalize(texture(uBumpTexture, vUV).rgb * 2.0 - 1.0);
     }
   }
 
+  N = normalize(TBN * n);
+  vec3 V = normalize(-vPosition); // camera sits at the origin
+
   // ambient coefficient
   vec3 Ka = vec3(0.1);
-
-  vec3 V = normalize(-vPosition); // camera sits at the origin
 
   // light 1 (white light)
   vec3 L1 = normalize(vec3(3., 4., -10.) - vPosition);
@@ -94,5 +105,5 @@ void main() {
   vec3 Id = diff1 + diff2 + diff3;
   vec3 Is = spec1 + spec2 + spec3;
 
-  fragColor = vec4(aColor*Ia + diffColor*Id + sColor*Is, 1.0);
+  fragColor = vec4(diffuseColor*(Ia + Id) + sColor*Is, 1.0);
 }`
