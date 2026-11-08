@@ -103,6 +103,7 @@ class Object extends Node {
             tangents,
             positions,
             shininess,
+            bumpScale,
             aColor,
             dColor,
             sColor,
@@ -136,6 +137,7 @@ class Object extends Node {
             this.bumpElement.crossOrigin = "anonymous"
             this.bumpElement.src = bumpSrc
         }
+        this.bumpScale = bumpScale || 6
 
         this.children = []
         this.parent = undefined
@@ -357,6 +359,10 @@ class Shader {
             this.program,
             "shininess"
         )
+        this.uniformLocations["bumpScale"] = gl.getUniformLocation(
+            this.program,
+            "bumpScale"
+        )
         this.uniformLocations["aColor"] = gl.getUniformLocation(
             this.program,
             "aColor"
@@ -461,6 +467,12 @@ class Shader {
             gl.uniform1f(
                 this.uniformLocations["shininess"],
                 objects[o].shininess
+            )
+
+            // bump scale value
+            gl.uniform1f(
+                this.uniformLocations["bumpScale"],
+                objects[o].bumpScale
             )
 
             // texture mode

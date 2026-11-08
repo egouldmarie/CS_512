@@ -215,10 +215,10 @@
                                     <td>
                                         <input
                                             type="range"
-                                            min="0"
-                                            max="1"
+                                            min="1"
+                                            max="10"
                                             step="0.1"
-                                            value="0.5"
+                                            value="6"
                                             id="bumpScale"
                                             oninput="updateObj()"
                                         />
@@ -419,6 +419,7 @@
                 document.getElementById("aColor").value = activeObj.aColor[0]
                 document.getElementById("sColor").value = activeObj.sColor[0]
                 document.getElementById("shininess").value = activeObj.shininess
+                document.getElementById("bumpScale").value = activeObj.bumpScale
                 setTextureMappingMode()
             }
             setActiveSegment(activeIdx)
@@ -474,6 +475,9 @@
                 activeObj.sColor = [s, s, s]
                 activeObj.shininess = Number(
                     document.getElementById("shininess").value
+                )
+                activeObj.bumpScale = Number(
+                    document.getElementById("bumpScale").value
                 )
                 activeObj.updateMatrix()
             }

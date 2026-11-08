@@ -71,7 +71,7 @@ void main() {
       vec2 dv = vec2(0.0, 1.0 / float(textureSize(uTexture, 0).y));
       float dhdu = (height(vUV + du) - height(vUV - du)) * 0.5;
       float dhdv = (height(vUV + dv) - height(vUV - dv)) * 0.5;
-      n = normalize(vec3(-6. * dhdu, -6. * dhdv, 1.0));
+      n = normalize(vec3(-bumpScale * dhdu, -bumpScale * dhdv, 1.0));
     } else {
       // Normal mapping
       diffuseColor = texture(uTexture, vUV).rgb;
