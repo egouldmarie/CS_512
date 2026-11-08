@@ -161,7 +161,7 @@ function makeSphere(radius, resolution) {
         pos.push(0, 0, -radius)
         nrm.push(0, 0, -1)
         tan.push(tx0, ty0, tz0)
-        uv.push(0.5, 0)
+        uv.push((i + 0.5) / wResolution, 0)
         // 1
         pos.push(x1 * radius, y1 * radius, z1 * radius)
         nrm.push(x1, y1, z1)
@@ -197,7 +197,7 @@ function makeSphere(radius, resolution) {
         pos.push(0, 0, radius)
         nrm.push(0, 0, 1)
         tan.push(tx0, ty0, tz0)
-        uv.push(0.5, 1)
+        uv.push((i + 0.5) / wResolution, 1)
         // 1
         pos.push(x1 * radius, y1 * radius, z1 * radius)
         nrm.push(x1, y1, z1)
