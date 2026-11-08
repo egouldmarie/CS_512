@@ -64,15 +64,17 @@ void main() {
   if(textureMode == -1.) {
     diffuseColor = dColor;
   } else {
-    diffuseColor = texture(uTexture, vUV).rgb;
     if(textureMode == 0.) {
       // Bump mapping: tilt the normal against the gradient of the height field
+      diffuseColor = dColor;
       vec2 du = vec2(1.0 / float(textureSize(uTexture, 0).x), 0.0);
       vec2 dv = vec2(0.0, 1.0 / float(textureSize(uTexture, 0).y));
       float dhdu = (height(vUV + du) - height(vUV - du)) * 0.5;
       float dhdv = (height(vUV + dv) - height(vUV - dv)) * 0.5;
       n = normalize(vec3(-bumpScale * dhdu, -bumpScale * dhdv, 1.0));
     } else {
+      // Normal mapping
+      diffuseColor = texture(uTexture, vUV).rgb;
       n = normalize(texture(uBumpTexture, vUV).rgb);
     }
     N = normalize(TBN * n);
