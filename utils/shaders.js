@@ -72,12 +72,12 @@ void main() {
       float dhdu = (height(vUV + du) - height(vUV - du)) * 0.5;
       float dhdv = (height(vUV + dv) - height(vUV - dv)) * 0.5;
       n = normalize(vec3(-bumpScale * dhdu, -bumpScale * dhdv, 1.0));
+      N = normalize(TBN * n);
     } else {
-      n = normalize(texture(uBumpTexture, vUV).rgb * 2.0 - 1.0);
+      N = normalize(N + texture(uBumpTexture, vUV).rgb);
     }
   }
 
-  N = normalize(TBN * n);
   vec3 V = normalize(-vPosition); // camera sits at the origin
 
   // ambient coefficient

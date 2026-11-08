@@ -88,7 +88,7 @@ function makeSphere(radius, resolution) {
                 y3 = Math.cos(phi + delPhi) * Math.sin(theta + delTheta),
                 z3 = Math.sin(phi + delPhi)
 
-            // at theta = 0, phi = 0, tangent T = [0 0 1]
+            // at theta = 0, phi = 0, tangent T = (0, 0, 1)
             // applying a rotation around the y-axis by phi then
             // a rotation around the x-axis by theta should give
             // the transformed tangent line for the new coordinate
@@ -148,6 +148,9 @@ function makeSphere(radius, resolution) {
         let x2 = Math.cos(phi) * Math.cos(theta + delTheta),
             y2 = Math.cos(phi) * Math.sin(theta + delTheta),
             z2 = Math.sin(phi)
+        let tx0 = Math.cos(theta + delTheta / 2),
+            ty0 = Math.sin(theta + delTheta / 2),
+            tz0 = 0
         let tx1 = Math.cos(theta) * Math.sin(phi),
             ty1 = Math.sin(theta) * Math.sin(phi),
             tz1 = Math.cos(phi)
@@ -157,7 +160,7 @@ function makeSphere(radius, resolution) {
         // 0
         pos.push(0, 0, -radius)
         nrm.push(0, 0, -1)
-        tan.push(0, 0, 0)
+        tan.push(tx0, ty0, tz0)
         uv.push(0.5, 0)
         // 1
         pos.push(x1 * radius, y1 * radius, z1 * radius)
@@ -181,6 +184,9 @@ function makeSphere(radius, resolution) {
         let x2 = Math.cos(phi) * Math.cos(theta + delTheta),
             y2 = Math.cos(phi) * Math.sin(theta + delTheta),
             z2 = Math.sin(phi)
+        let tx0 = Math.cos(theta + delTheta / 2),
+            ty0 = Math.sin(theta + delTheta / 2),
+            tz0 = 0
         let tx1 = Math.cos(theta) * Math.sin(phi),
             ty1 = Math.sin(theta) * Math.sin(phi),
             tz1 = Math.cos(phi)
@@ -190,7 +196,7 @@ function makeSphere(radius, resolution) {
         // 0
         pos.push(0, 0, radius)
         nrm.push(0, 0, 1)
-        tan.push(0, 0, 0)
+        tan.push(tx0, ty0, tz0)
         uv.push(0.5, 1)
         // 1
         pos.push(x1 * radius, y1 * radius, z1 * radius)
