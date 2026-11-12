@@ -186,6 +186,7 @@ class Object extends Node {
             this.textureElement.onload = () => {
                 this.texture = gl.createTexture()
                 gl.bindTexture(gl.TEXTURE_2D, this.texture)
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true)
                 gl.texImage2D(
                     gl.TEXTURE_2D,
                     0,
@@ -193,6 +194,12 @@ class Object extends Node {
                     gl.RGBA,
                     gl.UNSIGNED_BYTE,
                     this.textureElement
+                )
+                gl.generateMipmap(gl.TEXTURE_2D)
+                gl.texParameteri(
+                    gl.TEXTURE_2D,
+                    gl.TEXTURE_MIN_FILTER,
+                    gl.LINEAR_MIPMAP_LINEAR
                 )
             }
         }
