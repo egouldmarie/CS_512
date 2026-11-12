@@ -108,32 +108,38 @@ function makeSphere(radius, resolution) {
             // 0
             pos.push(x0 * radius, y0 * radius, z0 * radius)
             nrm.push(x0, y0, z0)
-            tan.push(tx0, ty0, tz0)
+            tan.push(0, 0, 1)
+            //tan.push(tx0, ty0, tz0)
             uv.push(i / wResolution, j / hResolution)
             // 2
             pos.push(x2 * radius, y2 * radius, z2 * radius)
             nrm.push(x2, y2, z2)
-            tan.push(tx2, ty2, tz2)
+            tan.push(0, 0, 1)
+            //tan.push(tx2, ty2, tz2)
             uv.push(i / wResolution, (j + 1) / hResolution)
             // 1
             pos.push(x1 * radius, y1 * radius, z1 * radius)
             nrm.push(x1, y1, z1)
-            tan.push(tx1, ty1, tz1)
+            tan.push(0, 0, 1)
+            //tan.push(tx1, ty1, tz1)
             uv.push((i + 1) / wResolution, j / hResolution)
             // 2
             pos.push(x2 * radius, y2 * radius, z2 * radius)
             nrm.push(x2, y2, z2)
-            tan.push(tx2, ty2, tz2)
+            tan.push(0, 0, 1)
+            //tan.push(tx2, ty2, tz2)
             uv.push(i / wResolution, (j + 1) / hResolution)
             // 3
             pos.push(x3 * radius, y3 * radius, z3 * radius)
             nrm.push(x3, y3, z3)
-            tan.push(tx3, ty3, tz3)
+            tan.push(0, 0, 1)
+            //tan.push(tx3, ty3, tz3)
             uv.push((i + 1) / wResolution, (j + 1) / hResolution)
             // 1
             pos.push(x1 * radius, y1 * radius, z1 * radius)
             nrm.push(x1, y1, z1)
-            tan.push(tx1, ty1, tz1)
+            tan.push(0, 0, 1)
+            //tan.push(tx1, ty1, tz1)
             uv.push((i + 1) / wResolution, j / hResolution)
         }
     }
@@ -148,8 +154,8 @@ function makeSphere(radius, resolution) {
         let x2 = Math.cos(phi) * Math.cos(theta + delTheta),
             y2 = Math.cos(phi) * Math.sin(theta + delTheta),
             z2 = Math.sin(phi)
-        let tx0 = Math.cos(theta + delTheta / 2),
-            ty0 = Math.sin(theta + delTheta / 2),
+        let tx0 = -Math.cos(theta + delTheta / 2),
+            ty0 = -Math.sin(theta + delTheta / 2),
             tz0 = 0
         let tx1 = Math.cos(theta) * Math.sin(phi),
             ty1 = Math.sin(theta) * Math.sin(phi),
@@ -160,17 +166,20 @@ function makeSphere(radius, resolution) {
         // 0
         pos.push(0, 0, -radius)
         nrm.push(0, 0, -1)
-        tan.push(tx0, ty0, tz0)
+        tan.push(0, 0, 1)
+        //tan.push(tx0, ty0, tz0)
         uv.push((i + 0.5) / wResolution, 0)
         // 1
         pos.push(x1 * radius, y1 * radius, z1 * radius)
         nrm.push(x1, y1, z1)
-        tan.push(tx1, ty1, tz1)
+        tan.push(0, 0, 1)
+        //tan.push(tx1, ty1, tz1)
         uv.push(i / wResolution, 1 / hResolution)
         // 2
         pos.push(x2 * radius, y2 * radius, z2 * radius)
         nrm.push(x2, y2, z2)
-        tan.push(tx2, ty2, tz2)
+        tan.push(0, 0, 1)
+        //tan.push(tx2, ty2, tz2)
         uv.push((i + 1) / wResolution, 1 / hResolution)
     }
 
@@ -196,17 +205,20 @@ function makeSphere(radius, resolution) {
         // 0
         pos.push(0, 0, radius)
         nrm.push(0, 0, 1)
-        tan.push(tx0, ty0, tz0)
+        //tan.push(tx0, ty0, tz0)
+        tan.push(0, 0, 1)
         uv.push((i + 0.5) / wResolution, 1)
         // 1
         pos.push(x1 * radius, y1 * radius, z1 * radius)
         nrm.push(x1, y1, z1)
-        tan.push(tx1, ty1, tz1)
+        tan.push(0, 0, 1)
+        //tan.push(tx1, ty1, tz1)
         uv.push(i / wResolution, 1 - 1 / hResolution)
         // 2
         pos.push(x2 * radius, y2 * radius, z2 * radius)
         nrm.push(x2, y2, z2)
-        tan.push(tx2, ty2, tz2)
+        tan.push(0, 0, 1)
+        //tan.push(tx2, ty2, tz2)
         uv.push((i + 1) / wResolution, 1 - 1 / hResolution)
     }
 

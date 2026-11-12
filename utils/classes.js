@@ -142,6 +142,8 @@ class Object extends Node {
         this.children = []
         this.parent = undefined
 
+        this.show = true
+
         this.initBuffers(gl)
     }
 
@@ -444,113 +446,148 @@ class Shader {
         )
 
         for (let o in objects) {
-            // object matrix
-            gl.uniformMatrix4fv(
-                this.uniformLocations["modelMatrix"],
-                false,
-                objects[o].modelMatrix
-            )
-
-            // normal matrix
-            gl.uniformMatrix4fv(
-                this.uniformLocations["normalMatrix"],
-                false,
-                objects[o].normalMatrix
-            )
-
-            // ambient coefficient
-            gl.uniform3fv(this.uniformLocations["aColor"], objects[o].aColor)
-
-            // diffuse coefficient
-            gl.uniform3fv(this.uniformLocations["dColor"], objects[o].dColor)
-
-            // specular coefficient
-            gl.uniform3fv(this.uniformLocations["sColor"], objects[o].sColor)
-
-            // shininess coefficient
-            gl.uniform1f(
-                this.uniformLocations["shininess"],
-                objects[o].shininess
-            )
-
-            // bump scale value
-            gl.uniform1f(
-                this.uniformLocations["bumpScale"],
-                objects[o].bumpScale
-            )
-
-            // texture mode
-            gl.uniform1f(
-                this.uniformLocations["textureMode"],
-                objects[o].textureMode
-            )
-
-            if (objects[o].texture) {
-                gl.activeTexture(gl.TEXTURE0)
-                gl.bindTexture(gl.TEXTURE_2D, objects[o].texture)
-                gl.uniform1i(this.uniformLocations["uTexture"], 0)
-                gl.texParameteri(
-                    gl.TEXTURE_2D,
-                    gl.TEXTURE_MIN_FILTER,
-                    gl.LINEAR
+            if (objects[o].show) {
+                // object matrix
+                gl.uniformMatrix4fv(
+                    this.uniformLocations["modelMatrix"],
+                    false,
+                    objects[o].modelMatrix
                 )
-            }
 
-            if (objects[o].bumpTexture) {
-                gl.activeTexture(gl.TEXTURE1)
-                gl.bindTexture(gl.TEXTURE_2D, objects[o].bumpTexture)
-                gl.uniform1i(this.uniformLocations["uBumpTexture"], 0)
-                gl.texParameteri(
-                    gl.TEXTURE_2D,
-                    gl.TEXTURE_MIN_FILTER,
-                    gl.LINEAR
+                // normal matrix
+                gl.uniformMatrix4fv(
+                    this.uniformLocations["normalMatrix"],
+                    false,
+                    objects[o].normalMatrix
                 )
-            }
 
-            // positions
-            gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].positionBuffer)
-            gl.enableVertexAttribArray(this.posLoc)
-            gl.vertexAttribPointer(this.posLoc, 3, gl.FLOAT, false, 0, 0)
-
-            // colors
-            if (this.colorLoc >= 0 && objects[o].colorBuffer) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].colorBuffer)
-                gl.enableVertexAttribArray(this.colorLoc)
-                gl.vertexAttribPointer(this.colorLoc, 3, gl.FLOAT, false, 0, 0)
-            }
-
-            // normals
-            if (this.normLoc >= 0 && objects[o].normalBuffer) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].normalBuffer)
-                gl.enableVertexAttribArray(this.normLoc)
-                gl.vertexAttribPointer(this.normLoc, 3, gl.FLOAT, false, 0, 0)
-            }
-
-            // tangents
-            if (this.tanLoc >= 0 && objects[o].tangentBuffer) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].tangentBuffer)
-                gl.enableVertexAttribArray(this.tanLoc)
-                gl.vertexAttribPointer(this.tanLoc, 3, gl.FLOAT, false, 0, 0)
-            }
-
-            // uvs
-            if (this.uvLoc >= 0 && objects[o].uvBuffer) {
-                gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].uvBuffer)
-                gl.enableVertexAttribArray(this.uvLoc)
-                gl.vertexAttribPointer(this.uvLoc, 2, gl.FLOAT, false, 0, 0)
-            }
-
-            if (objects[o].indices) {
-                // draw by index order
-                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, objects[o].indexBuffer)
-                gl.drawElements(
-                    this.mode,
-                    objects[o].indices.length,
-                    gl.UNSIGNED_SHORT,
-                    0
+                // ambient coefficient
+                gl.uniform3fv(
+                    this.uniformLocations["aColor"],
+                    objects[o].aColor
                 )
-            } else {
-                gl.drawArrays(this.mode, 0, objects[o].positions.length / 3)
+
+                // diffuse coefficient
+                gl.uniform3fv(
+                    this.uniformLocations["dColor"],
+                    objects[o].dColor
+                )
+
+                // specular coefficient
+                gl.uniform3fv(
+                    this.uniformLocations["sColor"],
+                    objects[o].sColor
+                )
+
+                // shininess coefficient
+                gl.uniform1f(
+                    this.uniformLocations["shininess"],
+                    objects[o].shininess
+                )
+
+                // bump scale value
+                gl.uniform1f(
+                    this.uniformLocations["bumpScale"],
+                    objects[o].bumpScale
+                )
+
+                // texture mode
+                gl.uniform1f(
+                    this.uniformLocations["textureMode"],
+                    objects[o].textureMode
+                )
+
+                if (objects[o].texture) {
+                    gl.activeTexture(gl.TEXTURE0)
+                    gl.bindTexture(gl.TEXTURE_2D, objects[o].texture)
+                    gl.uniform1i(this.uniformLocations["uTexture"], 0)
+                    gl.texParameteri(
+                        gl.TEXTURE_2D,
+                        gl.TEXTURE_MIN_FILTER,
+                        gl.LINEAR
+                    )
+                }
+
+                if (objects[o].bumpTexture) {
+                    gl.activeTexture(gl.TEXTURE1)
+                    gl.bindTexture(gl.TEXTURE_2D, objects[o].bumpTexture)
+                    gl.uniform1i(this.uniformLocations["uBumpTexture"], 0)
+                    gl.texParameteri(
+                        gl.TEXTURE_2D,
+                        gl.TEXTURE_MIN_FILTER,
+                        gl.LINEAR
+                    )
+                }
+
+                // positions
+                gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].positionBuffer)
+                gl.enableVertexAttribArray(this.posLoc)
+                gl.vertexAttribPointer(this.posLoc, 3, gl.FLOAT, false, 0, 0)
+
+                // colors
+                if (this.colorLoc >= 0 && objects[o].colorBuffer) {
+                    gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].colorBuffer)
+                    gl.enableVertexAttribArray(this.colorLoc)
+                    gl.vertexAttribPointer(
+                        this.colorLoc,
+                        3,
+                        gl.FLOAT,
+                        false,
+                        0,
+                        0
+                    )
+                }
+
+                // normals
+                if (this.normLoc >= 0 && objects[o].normalBuffer) {
+                    gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].normalBuffer)
+                    gl.enableVertexAttribArray(this.normLoc)
+                    gl.vertexAttribPointer(
+                        this.normLoc,
+                        3,
+                        gl.FLOAT,
+                        false,
+                        0,
+                        0
+                    )
+                }
+
+                // tangents
+                if (this.tanLoc >= 0 && objects[o].tangentBuffer) {
+                    gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].tangentBuffer)
+                    gl.enableVertexAttribArray(this.tanLoc)
+                    gl.vertexAttribPointer(
+                        this.tanLoc,
+                        3,
+                        gl.FLOAT,
+                        false,
+                        0,
+                        0
+                    )
+                }
+
+                // uvs
+                if (this.uvLoc >= 0 && objects[o].uvBuffer) {
+                    gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].uvBuffer)
+                    gl.enableVertexAttribArray(this.uvLoc)
+                    gl.vertexAttribPointer(this.uvLoc, 2, gl.FLOAT, false, 0, 0)
+                }
+
+                if (objects[o].indices) {
+                    // draw by index order
+                    gl.bindBuffer(
+                        gl.ELEMENT_ARRAY_BUFFER,
+                        objects[o].indexBuffer
+                    )
+                    gl.drawElements(
+                        this.mode,
+                        objects[o].indices.length,
+                        gl.UNSIGNED_SHORT,
+                        0
+                    )
+                } else {
+                    gl.drawArrays(this.mode, 0, objects[o].positions.length / 3)
+                }
             }
         }
     }

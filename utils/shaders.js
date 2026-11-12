@@ -108,4 +108,5 @@ void main() {
   vec3 Is = spec1 + spec2 + spec3;
 
   fragColor = vec4(diffuseColor*(Ia + Id) + sColor*Is, 1.0);
+  //fragColor = vec4(T, 1.);
 }`
