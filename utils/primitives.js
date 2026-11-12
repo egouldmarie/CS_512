@@ -92,54 +92,44 @@ function makeSphere(radius, resolution) {
             // applying a rotation around the y-axis by phi then
             // a rotation around the x-axis by theta should give
             // the transformed tangent line for the new coordinate
-            let tx0 = Math.cos(theta) * Math.sin(phi),
-                ty0 = Math.sin(theta) * Math.sin(phi),
-                tz0 = Math.cos(phi)
-            let tx1 = Math.cos(theta + delTheta) * Math.sin(phi),
-                ty1 = Math.sin(theta + delTheta) * Math.sin(phi),
-                tz1 = Math.cos(phi)
-            let tx2 = Math.cos(theta) * Math.sin(phi + delPhi),
-                ty2 = Math.sin(theta) * Math.sin(phi + delPhi),
-                tz2 = Math.cos(phi + delPhi)
-            let tx3 = Math.cos(theta + delTheta) * Math.sin(phi + delPhi),
-                ty3 = Math.sin(theta + delTheta) * Math.sin(phi + delPhi),
-                tz3 = Math.cos(phi + delPhi)
+            let tx0 = Math.cos(theta + Math.PI / 2),
+                ty0 = Math.sin(theta + Math.PI / 2)
+            let tx1 = Math.cos(theta + Math.PI / 2 + delTheta),
+                ty1 = Math.sin(theta + Math.PI / 2 + delTheta)
+            let tx2 = Math.cos(theta + Math.PI / 2),
+                ty2 = Math.sin(theta + Math.PI / 2)
+            let tx3 = Math.cos(theta + Math.PI / 2 + delTheta),
+                ty3 = Math.sin(theta + Math.PI / 2 + delTheta)
 
             // 0
             pos.push(x0 * radius, y0 * radius, z0 * radius)
             nrm.push(x0, y0, z0)
-            tan.push(0, 0, 1)
-            //tan.push(tx0, ty0, tz0)
+            tan.push(tx0, ty0, 0)
             uv.push(i / wResolution, j / hResolution)
             // 2
             pos.push(x2 * radius, y2 * radius, z2 * radius)
             nrm.push(x2, y2, z2)
-            tan.push(0, 0, 1)
-            //tan.push(tx2, ty2, tz2)
+            tan.push(tx2, ty2, 0)
             uv.push(i / wResolution, (j + 1) / hResolution)
             // 1
             pos.push(x1 * radius, y1 * radius, z1 * radius)
             nrm.push(x1, y1, z1)
-            tan.push(0, 0, 1)
-            //tan.push(tx1, ty1, tz1)
+            tan.push(tx1, ty1, 0)
             uv.push((i + 1) / wResolution, j / hResolution)
             // 2
             pos.push(x2 * radius, y2 * radius, z2 * radius)
             nrm.push(x2, y2, z2)
-            tan.push(0, 0, 1)
-            //tan.push(tx2, ty2, tz2)
+            tan.push(tx2, ty2, 0)
             uv.push(i / wResolution, (j + 1) / hResolution)
             // 3
             pos.push(x3 * radius, y3 * radius, z3 * radius)
             nrm.push(x3, y3, z3)
-            tan.push(0, 0, 1)
-            //tan.push(tx3, ty3, tz3)
+            tan.push(tx3, ty3, 0)
             uv.push((i + 1) / wResolution, (j + 1) / hResolution)
             // 1
             pos.push(x1 * radius, y1 * radius, z1 * radius)
             nrm.push(x1, y1, z1)
-            tan.push(0, 0, 1)
-            //tan.push(tx1, ty1, tz1)
+            tan.push(tx1, ty1, 0)
             uv.push((i + 1) / wResolution, j / hResolution)
         }
     }
@@ -154,32 +144,26 @@ function makeSphere(radius, resolution) {
         let x2 = Math.cos(phi) * Math.cos(theta + delTheta),
             y2 = Math.cos(phi) * Math.sin(theta + delTheta),
             z2 = Math.sin(phi)
-        let tx0 = -Math.cos(theta + delTheta / 2),
-            ty0 = -Math.sin(theta + delTheta / 2),
-            tz0 = 0
-        let tx1 = Math.cos(theta) * Math.sin(phi),
-            ty1 = Math.sin(theta) * Math.sin(phi),
-            tz1 = Math.cos(phi)
-        let tx2 = Math.cos(theta + delTheta) * Math.sin(phi),
-            ty2 = Math.sin(theta + delTheta) * Math.sin(phi),
-            tz2 = Math.cos(phi)
+        let tx0 = Math.cos(theta + Math.PI / 2 + delTheta / 2),
+            ty0 = Math.sin(theta + Math.PI / 2 + delTheta / 2)
+        let tx1 = Math.cos(theta + Math.PI / 2),
+            ty1 = Math.sin(theta + Math.PI / 2)
+        let tx2 = Math.cos(theta + Math.PI / 2 + delTheta),
+            ty2 = Math.sin(theta + Math.PI / 2 + delTheta)
         // 0
         pos.push(0, 0, -radius)
         nrm.push(0, 0, -1)
-        tan.push(0, 0, 1)
-        //tan.push(tx0, ty0, tz0)
+        tan.push(tx0, ty0, 0)
         uv.push((i + 0.5) / wResolution, 0)
         // 1
         pos.push(x1 * radius, y1 * radius, z1 * radius)
         nrm.push(x1, y1, z1)
-        tan.push(0, 0, 1)
-        //tan.push(tx1, ty1, tz1)
+        tan.push(tx1, ty1, 0)
         uv.push(i / wResolution, 1 / hResolution)
         // 2
         pos.push(x2 * radius, y2 * radius, z2 * radius)
         nrm.push(x2, y2, z2)
-        tan.push(0, 0, 1)
-        //tan.push(tx2, ty2, tz2)
+        tan.push(tx2, ty2, 0)
         uv.push((i + 1) / wResolution, 1 / hResolution)
     }
 
@@ -193,32 +177,26 @@ function makeSphere(radius, resolution) {
         let x2 = Math.cos(phi) * Math.cos(theta + delTheta),
             y2 = Math.cos(phi) * Math.sin(theta + delTheta),
             z2 = Math.sin(phi)
-        let tx0 = Math.cos(theta + delTheta / 2),
-            ty0 = Math.sin(theta + delTheta / 2),
-            tz0 = 0
-        let tx1 = Math.cos(theta) * Math.sin(phi),
-            ty1 = Math.sin(theta) * Math.sin(phi),
-            tz1 = Math.cos(phi)
-        let tx2 = Math.cos(theta + delTheta) * Math.sin(phi),
-            ty2 = Math.sin(theta + delTheta) * Math.sin(phi),
-            tz2 = Math.cos(phi)
+        let tx0 = Math.cos(theta + Math.PI / 2 + delTheta / 2),
+            ty0 = Math.sin(theta + Math.PI / 2 + delTheta / 2)
+        let tx1 = Math.cos(theta + Math.PI / 2),
+            ty1 = Math.sin(theta + Math.PI / 2)
+        let tx2 = Math.cos(theta + Math.PI / 2 + delTheta),
+            ty2 = Math.sin(theta + Math.PI / 2 + delTheta)
         // 0
         pos.push(0, 0, radius)
         nrm.push(0, 0, 1)
-        //tan.push(tx0, ty0, tz0)
-        tan.push(0, 0, 1)
+        tan.push(tx0, ty0, 0)
         uv.push((i + 0.5) / wResolution, 1)
         // 1
         pos.push(x1 * radius, y1 * radius, z1 * radius)
         nrm.push(x1, y1, z1)
-        tan.push(0, 0, 1)
-        //tan.push(tx1, ty1, tz1)
+        tan.push(tx1, ty1, 0)
         uv.push(i / wResolution, 1 - 1 / hResolution)
         // 2
         pos.push(x2 * radius, y2 * radius, z2 * radius)
         nrm.push(x2, y2, z2)
-        tan.push(0, 0, 1)
-        //tan.push(tx2, ty2, tz2)
+        tan.push(tx2, ty2, 0)
         uv.push((i + 1) / wResolution, 1 - 1 / hResolution)
     }
 
@@ -246,6 +224,11 @@ function makePrism(radius, height, sides) {
         let x1 = Math.cos(theta + delTheta),
             y1 = Math.sin(theta + delTheta)
 
+        let tx0 = Math.cos(theta + Math.PI / 2),
+            ty0 = Math.sin(theta + Math.PI / 2)
+        let tx1 = Math.cos(theta + delTheta + Math.PI / 2),
+            ty1 = Math.sin(theta + delTheta + Math.PI / 2)
+
         pos.push(x0 * radius, y0 * radius, height / 2) // 0
         pos.push(x0 * radius, y0 * radius, -height / 2) // 2
         pos.push(x1 * radius, y1 * radius, height / 2) // 1
@@ -271,12 +254,12 @@ function makePrism(radius, height, sides) {
             nrm.push(nx, ny, 0) // 1
         }
 
-        tan.push(0, 0, 1) // 0
-        tan.push(0, 0, 1) // 2
-        tan.push(0, 0, 1) // 1
-        tan.push(0, 0, 1) // 2
-        tan.push(0, 0, 1) // 3
-        tan.push(0, 0, 1) // 1
+        tan.push(tx0, ty0, 0) // 0
+        tan.push(tx0, ty0, 0) // 2
+        tan.push(tx1, ty1, 0) // 1
+        tan.push(tx0, ty0, 0) // 2
+        tan.push(tx1, ty1, 0) // 3
+        tan.push(tx1, ty1, 0) // 1
 
         uv.push(i / sides, 1) // 0
         uv.push(i / sides, 0) // 2
