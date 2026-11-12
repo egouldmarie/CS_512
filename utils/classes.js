@@ -180,30 +180,34 @@ class Object extends Node {
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW)
         }
 
-        this.textureElement.onload = () => {
-            this.texture = gl.createTexture()
-            gl.bindTexture(gl.TEXTURE_2D, this.texture)
-            gl.texImage2D(
-                gl.TEXTURE_2D,
-                0,
-                gl.RGBA,
-                gl.RGBA,
-                gl.UNSIGNED_BYTE,
-                this.textureElement
-            )
+        if (this.textureElement) {
+            this.textureElement.onload = () => {
+                this.texture = gl.createTexture()
+                gl.bindTexture(gl.TEXTURE_2D, this.texture)
+                gl.texImage2D(
+                    gl.TEXTURE_2D,
+                    0,
+                    gl.RGBA,
+                    gl.RGBA,
+                    gl.UNSIGNED_BYTE,
+                    this.textureElement
+                )
+            }
         }
 
-        this.bumpElement.onload = () => {
-            this.bumpTexture = gl.createTexture()
-            gl.bindTexture(gl.TEXTURE_2D, this.bumpTexture)
-            gl.texImage2D(
-                gl.TEXTURE_2D,
-                0,
-                gl.RGBA,
-                gl.RGBA,
-                gl.UNSIGNED_BYTE,
-                this.bumpElement
-            )
+        if (this.bumpElement) {
+            this.bumpElement.onload = () => {
+                this.bumpTexture = gl.createTexture()
+                gl.bindTexture(gl.TEXTURE_2D, this.bumpTexture)
+                gl.texImage2D(
+                    gl.TEXTURE_2D,
+                    0,
+                    gl.RGBA,
+                    gl.RGBA,
+                    gl.UNSIGNED_BYTE,
+                    this.bumpElement
+                )
+            }
         }
     }
 }
@@ -509,28 +513,28 @@ class Shader {
             gl.vertexAttribPointer(this.posLoc, 3, gl.FLOAT, false, 0, 0)
 
             // colors
-            if (this.colorLoc >= 0) {
+            if (this.colorLoc >= 0 && objects[o].colorBuffer) {
                 gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].colorBuffer)
                 gl.enableVertexAttribArray(this.colorLoc)
                 gl.vertexAttribPointer(this.colorLoc, 3, gl.FLOAT, false, 0, 0)
             }
 
             // normals
-            if (this.normLoc >= 0) {
+            if (this.normLoc >= 0 && objects[o].normalBuffer) {
                 gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].normalBuffer)
                 gl.enableVertexAttribArray(this.normLoc)
                 gl.vertexAttribPointer(this.normLoc, 3, gl.FLOAT, false, 0, 0)
             }
 
             // tangents
-            if (this.tanLoc >= 0) {
+            if (this.tanLoc >= 0 && objects[o].tangentBuffer) {
                 gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].tangentBuffer)
                 gl.enableVertexAttribArray(this.tanLoc)
                 gl.vertexAttribPointer(this.tanLoc, 3, gl.FLOAT, false, 0, 0)
             }
 
             // uvs
-            if (this.uvLoc >= 0) {
+            if (this.uvLoc >= 0 && objects[o].uvBuffer) {
                 gl.bindBuffer(gl.ARRAY_BUFFER, objects[o].uvBuffer)
                 gl.enableVertexAttribArray(this.uvLoc)
                 gl.vertexAttribPointer(this.uvLoc, 2, gl.FLOAT, false, 0, 0)
