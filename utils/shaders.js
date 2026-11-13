@@ -76,7 +76,7 @@ void main() {
     } else {
       // Normal mapping
       diffuseColor = texture(uTexture, vUV).rgb;
-      N = normalize(TBN * N * (texture(uBumpTexture, vUV).rgb*2. - 1.));
+      N = normalize(TBN * (texture(uBumpTexture, vUV).rgb*2. - 1.));
     }
   }
 
