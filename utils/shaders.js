@@ -47,7 +47,7 @@ uniform sampler2D uBumpTexture;
 out vec4 fragColor;
 
 float height(vec2 uv) {
-  vec3 c = texture(uBumpTexture, uv).rgb;
+  vec3 c = texture(uTexture, uv).rgb;
   return 1.0 - dot(c, vec3(0.299, 0.587, 0.114));
 }
 
@@ -65,17 +65,19 @@ void main() {
     diffuseColor = dColor;
   } else {
     if(textureMode == 0.) {
+      // Bump mapping: tilt the normal against the gradient of the height field
       diffuseColor = dColor;
+      vec2 du = vec2(1.0 / float(textureSize(uBumpTexture, 0).x), 0.0);
+      vec2 dv = vec2(0.0, 1.0 / float(textureSize(uBumpTexture, 0).y));
+      float dhdu = (height(vUV + du) - height(vUV - du)) * 0.5;
+      float dhdv = (height(vUV + dv) - height(vUV - dv)) * 0.5;
+      n = normalize(vec3(-bumpScale * dhdu, -bumpScale * dhdv, 1.0));
+      N = normalize(TBN * n);
     } else {
+      // Normal mapping
       diffuseColor = texture(uTexture, vUV).rgb;
+      N = normalize(TBN * N * (texture(uBumpTexture, vUV).rgb*2. - 1.));
     }
-    // Bump mapping: tilt the normal against the gradient of the height field
-    vec2 du = vec2(1.0 / float(textureSize(uBumpTexture, 0).x), 0.0);
-    vec2 dv = vec2(0.0, 1.0 / float(textureSize(uBumpTexture, 0).y));
-    float dhdu = (height(vUV + du) - height(vUV - du)) * 0.5;
-    float dhdv = (height(vUV + dv) - height(vUV - dv)) * 0.5;
-    n = normalize(vec3(-bumpScale * dhdu, -bumpScale * dhdv, 1.0));
-    N = normalize(TBN * n);
   }
 
   vec3 V = normalize(-vPosition); // camera sits at the origin
