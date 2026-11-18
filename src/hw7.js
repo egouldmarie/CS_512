@@ -228,7 +228,7 @@ function setActiveSegment(idx) {
     yRotElem.value = activeObj.rotation.y
     zRotElem.value = activeObj.rotation.z
     sColElem.value = activeObj.sColor[0]
-    shinElem.value = activeObj.shininess
+    shinElem.value = -Math.pow(Math.E, activeObj.shininess / -100) + 1.00675
     document.getElementById("bumpScale").value = activeObj.bumpScale
     setTextureMappingMode()
 }
@@ -246,7 +246,7 @@ function updateObj() {
     activeObj.rotation.z = Number(zRotElem.value)
     let s = Number(sColElem.value)
     activeObj.sColor = [s, s, s]
-    activeObj.shininess = Number(shinElem.value)
+    activeObj.shininess = -100 * Math.log(-Number(shinElem.value) + 1.00675)
     activeObj.bumpScale = Number(document.getElementById("bumpScale").value)
     activeObj.updateMatrix()
 }
