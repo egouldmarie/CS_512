@@ -69,8 +69,6 @@ void main() {
     // Tangent frame (T, B, N)
     vec3 N = normalize(vNormal);
     vec3 T = normalize(vTangent - dot(vTangent, N) * N);
-    vec3 B = cross(N, T);
-    mat3 TBN = mat3(T, B, N);
 
     // texture mode
     vec3 diffuseColor;
@@ -79,6 +77,9 @@ void main() {
       diffuseColor = dColor;
     } else {
       if(textureMode == 0.) {
+        vec3 B = cross(N, T);
+        mat3 TBN = mat3(T, B, N);
+
         // Bump mapping: tilt the normal against the gradient of the height field
         diffuseColor = dColor;
         vec2 du = vec2(1.0 / float(textureSize(uBumpTexture, 0).x), 0.0);
@@ -88,6 +89,10 @@ void main() {
         n = normalize(vec3(-bumpScale * dhdu, -bumpScale * dhdv, 1.0));
         N = normalize(TBN * n);
       } else {
+        T = -T;
+        vec3 B = cross(N, T);
+        mat3 TBN = mat3(T, B, N);
+
         // Normal mapping
         diffuseColor = texture(uTexture, vUV).rgb;
         N = normalize(TBN * (texture(uBumpTexture, vUV).rgb*2. - 1.));
