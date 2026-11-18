@@ -223,7 +223,6 @@ class Object extends Node {
                     gl.LINEAR_MIPMAP_LINEAR
                 )
             }
-            document.body.appendChild(this.bumpElement)
         }
     }
 }

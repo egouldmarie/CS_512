@@ -1,122 +1,246 @@
-<!doctype html><head><meta charset=utf-8><title>UNM CS 412/512 HW7</title><style>body{color:#ccc;background:#111;width:calc(100vw - 20px);height:calc(100vh - 80px);margin:10px;font-family:monospace}textarea{color:#0f0;background:#222;width:300px;height:calc(50vh - 92.5px);font:14px monospace}input{width:130px}canvas{border:1px solid #444;width:100%}#glcanvas-container{height:calc(100vh - 285px)}.segments{width:100%}.segments tr{border:1px solid #fff}.segments td{border:1px solid #fff;padding:5px 14px}.segments td:hover{background-color:rgba(255,255,255,.2)}</style></head><body onresize=onresize()>
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>UNM CS 412/512 HW7</title>
+        <style>/*!****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css data:text/css;base64,CiAgICAgICAgICAgIGJvZHkgewogICAgICAgICAgICAgICAgY29sb3I6ICNjY2M7CiAgICAgICAgICAgICAgICB3aWR0aDogY2FsYygxMDB2dyAtIDIwcHgpOwogICAgICAgICAgICAgICAgaGVpZ2h0OiBjYWxjKDEwMHZoIC0gODBweCk7CiAgICAgICAgICAgICAgICBtYXJnaW46IDEwcHg7CiAgICAgICAgICAgICAgICBiYWNrZ3JvdW5kOiAjMTExOwogICAgICAgICAgICAgICAgZm9udC1mYW1pbHk6IG1vbm9zcGFjZTsKICAgICAgICAgICAgfQoKICAgICAgICAgICAgdGV4dGFyZWEgewogICAgICAgICAgICAgICAgYmFja2dyb3VuZDogIzIyMjsKICAgICAgICAgICAgICAgIGNvbG9yOiAjMGYwOwogICAgICAgICAgICAgICAgZm9udDogMTRweCBtb25vc3BhY2U7CiAgICAgICAgICAgICAgICB3aWR0aDogMzAwcHg7CiAgICAgICAgICAgICAgICBoZWlnaHQ6IGNhbGMoKDEwMHZoIC0gMTg1cHgpIC8gMik7CiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIGlucHV0IHsKICAgICAgICAgICAgICAgIHdpZHRoOiAxMzBweDsKICAgICAgICAgICAgfQoKICAgICAgICAgICAgY2FudmFzIHsKICAgICAgICAgICAgICAgIHdpZHRoOiAxMDAlOwogICAgICAgICAgICAgICAgYm9yZGVyOiAxcHggc29saWQgIzQ0NDsKICAgICAgICAgICAgfQoKICAgICAgICAgICAgI2dsY2FudmFzLWNvbnRhaW5lciB7CiAgICAgICAgICAgICAgICBoZWlnaHQ6IGNhbGMoMTAwdmggLSAyODVweCk7CiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIC5zZWdtZW50cyB7CiAgICAgICAgICAgICAgICB3aWR0aDogMTAwJTsKICAgICAgICAgICAgfQoKICAgICAgICAgICAgLnNlZ21lbnRzIHRyIHsKICAgICAgICAgICAgICAgIGJvcmRlcjogMXB4IHNvbGlkIHdoaXRlOwogICAgICAgICAgICB9CgogICAgICAgICAgICAuc2VnbWVudHMgdGQgewogICAgICAgICAgICAgICAgYm9yZGVyOiAxcHggc29saWQgd2hpdGU7CiAgICAgICAgICAgICAgICBwYWRkaW5nOiA1cHggMTRweCA1cHggMTRweDsKICAgICAgICAgICAgfQoKICAgICAgICAgICAgLnNlZ21lbnRzIHRkOmhvdmVyIHsKICAgICAgICAgICAgICAgIGJhY2tncm91bmQtY29sb3I6IHJnYmEoMjU1LCAyNTUsIDI1NSwgMC4yKTsKICAgICAgICAgICAgfQogICAgICAgIA== (exportType: text) ***!
+  \****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+
+            body {
+                color: #ccc;
+                width: calc(100vw - 20px);
+                height: calc(100vh - 80px);
+                margin: 10px;
+                background: #111;
+                font-family: monospace;
+            }
+
+            textarea {
+                background: #222;
+                color: #0f0;
+                font: 14px monospace;
+                width: 300px;
+                height: calc((100vh - 185px) / 2);
+            }
+
+            input {
+                width: 130px;
+            }
+
+            canvas {
+                width: 100%;
+                border: 1px solid #444;
+            }
+
+            #glcanvas-container {
+                height: calc(100vh - 285px);
+            }
+
+            .segments {
+                width: 100%;
+            }
+
+            .segments tr {
+                border: 1px solid white;
+            }
+
+            .segments td {
+                border: 1px solid white;
+                padding: 5px 14px 5px 14px;
+            }
+
+            .segments td:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+        </style>
+    </head>
+
+    <body onresize="onresize()">
         <h2>Texture Mapping</h2>
         <div></div>
         <p>
             Edit vertex and fragment shaders on the left to get the result
-            instantly. Use mouse to drag and rotate the<br>
+            instantly. Use mouse to drag and rotate the<br />
             selected object. Shift+click and drag to change position. Use arrow
-            keys and w, s keys to move the camera.<br>
+            keys and w, s keys to move the camera.<br />
             Free textures and normal maps from
-            <a href=https://opengameart.org/content/50-free-textures-5-with-normalmaps target=_blank>opengameart.com</a>.<br>
+            <a
+                href="https://opengameart.org/content/50-free-textures-5-with-normalmaps"
+                target="_blank"
+                >opengameart.com</a
+            >.<br />
         </p>
-        <script type=module src=hw7.mjs></script>
-        <div style=display:flex;gap:10px;align-items:flex-start>
-            <div style=display:flex;flex-direction:column;gap:10px>
+        <script type="module" src="hw7.mjs"></script>
+        <div style="display: flex; gap: 10px; align-items: flex-start">
+            <div style="display: flex; flex-direction: column; gap: 10px">
                 <div>
-                    <b>Vertex Shader</b><br>
-                    <textarea id=vertEditor></textarea>
+                    <b>Vertex Shader</b><br />
+                    <textarea id="vertEditor"></textarea>
                 </div>
                 <div>
-                    <b>Fragment Shader</b><br>
-                    <textarea id=fragEditor></textarea>
+                    <b>Fragment Shader</b><br />
+                    <textarea id="fragEditor"></textarea>
                 </div>
             </div>
-            <div style=display:flex;flex-direction:column;gap:10px;width:100%>
-                <div style=width:100%>
-                    <b>Controls</b><br>
-                    <table class=segments>
+            <div
+                style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    width: 100%;
+                "
+            >
+                <div style="width: 100%">
+                    <b>Controls</b><br />
+                    <table class="segments">
                         <tr>
-                            <td id=segA style=color:#ff73ce>
+                            <td id="segA" style="color: rgb(255, 115, 206)">
                                 Segment A
                             </td>
-                            <td id=segB style=color:#ffd000>
+                            <td id="segB" style="color: rgb(255, 208, 0)">
                                 Segment B
                             </td>
-                            <td id=segC style=color:#64ff64>
+                            <td id="segC" style="color: rgb(100, 255, 100)">
                                 Segment C
                             </td>
-                            <td id=segD style=color:#30b0ff>
+                            <td id="segD" style="color: rgb(48, 176, 255)">
                                 Segment D
                             </td>
-                            <td id=segE style=color:#c278ff>
+                            <td id="segE" style="color: rgb(194, 120, 255)">
                                 Segment E
                             </td>
                         </tr>
                     </table>
                 </div>
                 <div>
-                    <div style=display:flex;gap:20px;align-items:flex-start;justify-content:space-around>
+                    <div
+                        style="
+                            display: flex;
+                            gap: 20px;
+                            align-items: flex-start;
+                            justify-content: space-around;
+                        "
+                    >
                         <div>
-                            <b>Rotation</b><br>
+                            <b>Rotation</b><br />
                             <table>
                                 <tr>
                                     <td>X:</td>
                                     <td>
-                                        <input type=range min=0 max=6.283185307179586 step=0.01 value=0 id=xRot>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="6.283185307179586"
+                                            step="0.01"
+                                            value="0"
+                                            id="xRot"
+                                        />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Y:</td>
                                     <td>
-                                        <input type=range min=0 max=6.283185307179586 step=0.01 value=0 id=yRot>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="6.283185307179586"
+                                            step="0.01"
+                                            value="0"
+                                            id="yRot"
+                                        />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Z:</td>
                                     <td>
-                                        <input type=range min=0 max=6.283185307179586 step=0.01 value=0 id=zRot>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="6.283185307179586"
+                                            step="0.01"
+                                            value="0"
+                                            id="zRot"
+                                        />
                                     </td>
                                 </tr>
                             </table>
                         </div>
                         <div>
-                            <b>Texture Mapping</b><br>
+                            <b>Texture Mapping</b><br />
                             <table>
-                                <tr class=segments>
-                                    <td id=colorMode>Color (none)</td>
-                                    <td id=bumpMode>Bump</td>
-                                    <td id=normalMode>Normal</td>
+                                <tr class="segments">
+                                    <td id="colorMode">Color (none)</td>
+                                    <td id="bumpMode">Bump</td>
+                                    <td id="normalMode">Normal</td>
                                 </tr>
                             </table>
                             <table>
                                 <tr>
                                     <td>Bump Scale:</td>
                                     <td>
-                                        <input type=range min=1 max=10 step=0.1 value=6 id=bumpScale>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="10"
+                                            step="0.1"
+                                            value="6"
+                                            id="bumpScale"
+                                        />
                                     </td>
                                 </tr>
                             </table>
                         </div>
                         <div>
-                            <b>Material Properties</b><br>
+                            <b>Material Properties</b><br />
                             <table>
                                 <tr>
                                     <td>Ambient Coefficient:</td>
                                     <td>
-                                        <input type=range min=1 max=5 step=0.01 value=1 id=aColor>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="5"
+                                            step="0.01"
+                                            value="1"
+                                            id="aColor"
+                                        />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Specular Coefficient:</td>
                                     <td>
-                                        <input type=range min=0 max=5 step=0.01 value=1 id=sColor>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="5"
+                                            step="0.01"
+                                            value="1"
+                                            id="sColor"
+                                        />
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>Shininess:</td>
                                     <td>
-                                        <input type=range min=1 max=300 step=1 value=1 id=shininess>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="300"
+                                            step="1"
+                                            value="1"
+                                            id="shininess"
+                                        />
                                     </td>
                                 </tr>
                             </table>
                         </div>
                     </div>
                 </div>
-                <div id=glcanvas-container>
-                    <canvas id=glcanvas></canvas>
+                <div id="glcanvas-container">
+                    <canvas id="glcanvas"></canvas>
                 </div>
             </div>
         </div>
-    
-
-</body></html>
+    </body>
+</html>
