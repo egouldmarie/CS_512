@@ -216,7 +216,14 @@ class Object extends Node {
                     gl.UNSIGNED_BYTE,
                     this.bumpElement
                 )
+                gl.generateMipmap(gl.TEXTURE_2D)
+                gl.texParameteri(
+                    gl.TEXTURE_2D,
+                    gl.TEXTURE_MIN_FILTER,
+                    gl.LINEAR_MIPMAP_LINEAR
+                )
             }
+            document.body.appendChild(this.bumpElement)
         }
     }
 }
@@ -518,7 +525,7 @@ class Shader {
                 if (objects[o].bumpTexture) {
                     gl.activeTexture(gl.TEXTURE1)
                     gl.bindTexture(gl.TEXTURE_2D, objects[o].bumpTexture)
-                    gl.uniform1i(this.uniformLocations["uBumpTexture"], 0)
+                    gl.uniform1i(this.uniformLocations["uBumpTexture"], 1)
                     gl.texParameteri(
                         gl.TEXTURE_2D,
                         gl.TEXTURE_MIN_FILTER,

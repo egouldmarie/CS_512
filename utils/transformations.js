@@ -215,9 +215,9 @@ function mat4RotateY(matrix, angle) {
 // tranpose an nxn matrix M
 function transpose(M, n) {
     let A = []
-    for(let c=0; c<n; c++) {
-        for(let r=0; r<n; r++) {
-            A[r*n+c] = M[c*n+r]
+    for (let c = 0; c < n; c++) {
+        for (let r = 0; r < n; r++) {
+            A[r * n + c] = M[c * n + r]
         }
     }
     return A
@@ -226,8 +226,8 @@ function transpose(M, n) {
 // invert an nxn column-major matrix M
 function invert(M, n) {
     let det = determinant(M, n)
-    if(det !== 0) {
-        return multiplyScalar(adjugate(M, n), 1/det)
+    if (det !== 0) {
+        return multiplyScalar(adjugate(M, n), 1 / det)
     } else {
         throw new Error(`Unable to take the inverse of matrix M = ${M}`)
     }
@@ -235,12 +235,15 @@ function invert(M, n) {
 
 // determinant of an nxn matrix M
 function determinant(M, n) {
-    if(n === 2) {
-        return M[0]*M[3] - M[2]*M[1]
+    if (n === 2) {
+        return M[0] * M[3] - M[2] * M[1]
     } else {
         let det = 0
-        for(let k=0; k<n; k++) {
-            det+=Math.pow(-1, k)*M[k*n]*determinant(subArray(M, n, k, 0), n-1)
+        for (let k = 0; k < n; k++) {
+            det +=
+                Math.pow(-1, k) *
+                M[k * n] *
+                determinant(subArray(M, n, k, 0), n - 1)
         }
         return det
     }
@@ -249,11 +252,11 @@ function determinant(M, n) {
 // returns sub array of an nxn matrix minus column i and row j
 function subArray(M, n, i, j) {
     let A = []
-    for(let c=0; c<n; c++) {
-        if(c!==i) {
-            for(let r=0; r<n; r++) {
-                if(r!==j) {
-                    A.push(M[c*n + r])
+    for (let c = 0; c < n; c++) {
+        if (c !== i) {
+            for (let r = 0; r < n; r++) {
+                if (r !== j) {
+                    A.push(M[c * n + r])
                 }
             }
         }
@@ -264,9 +267,10 @@ function subArray(M, n, i, j) {
 // adjugate of an nxn matrix M
 function adjugate(M, n) {
     let A = []
-    for(let c=0; c<n; c++) {
-        for(let r=0; r<n; r++) {
-            A[c*n + r] = Math.pow(-1, c+r)*determinant(subArray(M, n, r, c), n-1)
+    for (let c = 0; c < n; c++) {
+        for (let r = 0; r < n; r++) {
+            A[c * n + r] =
+                Math.pow(-1, c + r) * determinant(subArray(M, n, r, c), n - 1)
         }
     }
     return A
@@ -274,8 +278,5 @@ function adjugate(M, n) {
 
 // multiply all elements in an array (vector, matrix, whatever) by a scalar
 function multiplyScalar(M, s) {
-    return M.map((x)=>x*s)
+    return M.map((x) => x * s)
 }
-
-window.invert = invert
-window.transpose = transpose

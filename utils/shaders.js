@@ -11,6 +11,9 @@ uniform mat4 projectionMatrix;
 uniform mat4 normalMatrix;
 uniform mat4 modelMatrix;
 
+out vec3 vLP1;
+out vec3 vLP2;
+out vec3 vLP3;
 out vec2 vUV;
 out vec3 vNormal;
 out vec3 vTangent;
@@ -18,6 +21,9 @@ out vec3 vPosition;
 
 void main() {
   vUV = uv;
+  vLP1 = (modelViewMatrix * vec4(3., 4., 40., 1.)).xyz;
+  vLP2 = (modelViewMatrix * vec4(-100., 0., -50., 1.)).xyz;
+  vLP3 = (modelViewMatrix * vec4(100., 0., -50., 1.)).xyz;
   vec4 pos = modelViewMatrix * modelMatrix * vec4(position, 1.0);
   vPosition = pos.xyz;
   vNormal = mat3(normalMatrix) * normal;
@@ -27,6 +33,9 @@ void main() {
 
 const fragmentShader = `#version 300 es
 precision mediump float;
+in vec3 vLP1;
+in vec3 vLP2;
+in vec3 vLP3;
 in vec2 vUV;
 in vec3 vNormal;
 in vec3 vTangent;
@@ -86,19 +95,19 @@ void main() {
   vec3 Ka = vec3(0.1);
 
   // light 1 (white light)
-  vec3 L1 = normalize(vec3(3., 4., -10.) - vPosition);
+  vec3 L1 = normalize(vLP1 - vPosition);
   vec3 R1 = reflect(-L1, N);
   vec3 diff1 = vec3(0.5)*max(dot(N, L1), 0.0);
   vec3 spec1 = vec3(0.5)*pow(max(dot(V, R1), 0.0), shininess);
 
   // light 2 (red light)
-  vec3 L2 = normalize(vec3(-100., 0., -100.) - vPosition);
+  vec3 L2 = normalize(vLP2 - vPosition);
   vec3 R2 = reflect(-L2, N);
   vec3 diff2 = vec3(.5, 0., 0.)*max(dot(N, L2), 0.0);
   vec3 spec2 = vec3(.5, 0., 0.)*pow(max(dot(V, R2), 0.0), shininess);
 
   // light 3 (blue light)
-  vec3 L3 = normalize(vec3(100., 0., -100.) - vPosition);
+  vec3 L3 = normalize(vLP3 - vPosition);
   vec3 R3 = reflect(-L3, N);
   vec3 diff3 = vec3(.0, 0.5, 1.)*max(dot(N, L3), 0.0);
   vec3 spec3 = vec3(.0, 0.5, 1.)*pow(max(dot(V, R3), 0.0), shininess);
@@ -108,5 +117,4 @@ void main() {
   vec3 Is = spec1 + spec2 + spec3;
 
   fragColor = vec4(diffuseColor*(Ia + Id) + sColor*Is, 1.0);
-  //fragColor = vec4(T, 1.);
 }`
