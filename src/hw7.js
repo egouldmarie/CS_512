@@ -1,17 +1,13 @@
-import { vertexShader, fragmentShader } from "./utils/shaders.js"
-import { makePrism, makeSphere } from "./utils/primitives.js"
-import { Shader, Object, PerspectiveCamera } from "./utils/classes.js"
-
-import img1 from "./img/201.jpg"
-import bump1 from "./img/201_norm.jpg"
-import img2 from "./img/202.jpg"
-import bump2 from "./img/202_norm.jpg"
-import img3 from "./img/203.jpg"
-import bump3 from "./img/203_norm.jpg"
-import img4 from "./img/204.jpg"
-import bump4 from "./img/204_norm.jpg"
-import img5 from "./img/205.jpg"
-import bump5 from "./img/205_norm.jpg"
+const img1 = "img/201.jpg"
+const bump1 = "img/201_norm.jpg"
+const img2 = "img/202.jpg"
+const bump2 = "img/202_norm.jpg"
+const img3 = "img/203.jpg"
+const bump3 = "img/203_norm.jpg"
+const img4 = "img/204.jpg"
+const bump4 = "img/204_norm.jpg"
+const img5 = "img/205.jpg"
+const bump5 = "img/205_norm.jpg"
 
 // WebGL setup
 const canvas = document.getElementById("glcanvas")

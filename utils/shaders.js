@@ -45,6 +45,8 @@ uniform vec3 aColor;
 uniform vec3 dColor;
 uniform vec3 sColor;
 
+uniform float isLight;
+
 uniform float shininess;
 
 uniform float bumpScale;
@@ -61,60 +63,64 @@ float height(vec2 uv) {
 }
 
 void main() {
-  // Tangent frame (T, B, N)
-  vec3 N = normalize(vNormal);
-  vec3 T = normalize(vTangent - dot(vTangent, N) * N);
-  vec3 B = cross(N, T);
-  mat3 TBN = mat3(T, B, N);
-
-  // texture mode
-  vec3 diffuseColor;
-  vec3 n;
-  if(textureMode == -1.) {
-    diffuseColor = dColor;
+  if(isLight > 0.) {
+    fragColor = vec4(dColor, 1.);
   } else {
-    if(textureMode == 0.) {
-      // Bump mapping: tilt the normal against the gradient of the height field
+    // Tangent frame (T, B, N)
+    vec3 N = normalize(vNormal);
+    vec3 T = normalize(vTangent - dot(vTangent, N) * N);
+    vec3 B = cross(N, T);
+    mat3 TBN = mat3(T, B, N);
+
+    // texture mode
+    vec3 diffuseColor;
+    vec3 n;
+    if(textureMode == -1.) {
       diffuseColor = dColor;
-      vec2 du = vec2(1.0 / float(textureSize(uBumpTexture, 0).x), 0.0);
-      vec2 dv = vec2(0.0, 1.0 / float(textureSize(uBumpTexture, 0).y));
-      float dhdu = (height(vUV + du) - height(vUV - du)) * 0.5;
-      float dhdv = (height(vUV + dv) - height(vUV - dv)) * 0.5;
-      n = normalize(vec3(-bumpScale * dhdu, -bumpScale * dhdv, 1.0));
-      N = normalize(TBN * n);
     } else {
-      // Normal mapping
-      diffuseColor = texture(uTexture, vUV).rgb;
-      N = normalize(TBN * (texture(uBumpTexture, vUV).rgb*2. - 1.));
+      if(textureMode == 0.) {
+        // Bump mapping: tilt the normal against the gradient of the height field
+        diffuseColor = dColor;
+        vec2 du = vec2(1.0 / float(textureSize(uBumpTexture, 0).x), 0.0);
+        vec2 dv = vec2(0.0, 1.0 / float(textureSize(uBumpTexture, 0).y));
+        float dhdu = (height(vUV + du) - height(vUV - du)) * 0.5;
+        float dhdv = (height(vUV + dv) - height(vUV - dv)) * 0.5;
+        n = normalize(vec3(-bumpScale * dhdu, -bumpScale * dhdv, 1.0));
+        N = normalize(TBN * n);
+      } else {
+        // Normal mapping
+        diffuseColor = texture(uTexture, vUV).rgb;
+        N = normalize(TBN * (texture(uBumpTexture, vUV).rgb*2. - 1.));
+      }
     }
+
+    vec3 V = normalize(-vPosition); // camera sits at the origin
+
+    // ambient coefficient
+    vec3 Ka = vec3(0.1);
+
+    // light 1 (white light)
+    vec3 L1 = normalize(vLP1 - vPosition);
+    vec3 R1 = reflect(-L1, N);
+    vec3 diff1 = vec3(0.5)*max(dot(N, L1), 0.0);
+    vec3 spec1 = vec3(0.5)*pow(max(dot(V, R1), 0.0), shininess);
+
+    // light 2 (red light)
+    vec3 L2 = normalize(vLP2 - vPosition);
+    vec3 R2 = reflect(-L2, N);
+    vec3 diff2 = vec3(.5, 0., 0.)*max(dot(N, L2), 0.0);
+    vec3 spec2 = vec3(.5, 0., 0.)*pow(max(dot(V, R2), 0.0), shininess);
+
+    // light 3 (blue light)
+    vec3 L3 = normalize(vLP3 - vPosition);
+    vec3 R3 = reflect(-L3, N);
+    vec3 diff3 = vec3(.0, 0.5, 1.)*max(dot(N, L3), 0.0);
+    vec3 spec3 = vec3(.0, 0.5, 1.)*pow(max(dot(V, R3), 0.0), shininess);
+
+    vec3 Ia = Ka;
+    vec3 Id = diff1 + diff2 + diff3;
+    vec3 Is = spec1 + spec2 + spec3;
+
+    fragColor = vec4(diffuseColor*(Ia + Id) + sColor*Is, 1.0);
   }
-
-  vec3 V = normalize(-vPosition); // camera sits at the origin
-
-  // ambient coefficient
-  vec3 Ka = vec3(0.1);
-
-  // light 1 (white light)
-  vec3 L1 = normalize(vLP1 - vPosition);
-  vec3 R1 = reflect(-L1, N);
-  vec3 diff1 = vec3(0.5)*max(dot(N, L1), 0.0);
-  vec3 spec1 = vec3(0.5)*pow(max(dot(V, R1), 0.0), shininess);
-
-  // light 2 (red light)
-  vec3 L2 = normalize(vLP2 - vPosition);
-  vec3 R2 = reflect(-L2, N);
-  vec3 diff2 = vec3(.5, 0., 0.)*max(dot(N, L2), 0.0);
-  vec3 spec2 = vec3(.5, 0., 0.)*pow(max(dot(V, R2), 0.0), shininess);
-
-  // light 3 (blue light)
-  vec3 L3 = normalize(vLP3 - vPosition);
-  vec3 R3 = reflect(-L3, N);
-  vec3 diff3 = vec3(.0, 0.5, 1.)*max(dot(N, L3), 0.0);
-  vec3 spec3 = vec3(.0, 0.5, 1.)*pow(max(dot(V, R3), 0.0), shininess);
-
-  vec3 Ia = Ka;
-  vec3 Id = diff1 + diff2 + diff3;
-  vec3 Is = spec1 + spec2 + spec3;
-
-  fragColor = vec4(diffuseColor*(Ia + Id) + sColor*Is, 1.0);
 }`

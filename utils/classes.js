@@ -109,7 +109,8 @@ class Object extends Node {
             sColor,
             textureMode,
             texSrc,
-            bumpSrc
+            bumpSrc,
+            isLight
         }
     ) {
         super()
@@ -125,6 +126,8 @@ class Object extends Node {
         this.dColor = dColor || [1.0, 1.0, 1.0]
         this.sColor = sColor || [1.0, 1.0, 1.0]
         this.shininess = shininess || 1.0
+
+        this.isLight = isLight || 0
 
         this.textureMode = textureMode !== undefined ? textureMode : 0
         if (texSrc) {
@@ -406,6 +409,10 @@ class Shader {
             this.program,
             "uBumpTexture"
         )
+        this.uniformLocations["isLight"] = gl.getUniformLocation(
+            this.program,
+            "isLight"
+        )
         for (let i in this.uniforms) {
             this.uniformLocations[i] = gl.getUniformLocation(this.program, i)
         }
@@ -508,6 +515,12 @@ class Shader {
                 gl.uniform1f(
                     this.uniformLocations["textureMode"],
                     objects[o].textureMode
+                )
+
+                // whether object is light or not
+                gl.uniform1f(
+                    this.uniformLocations["isLight"],
+                    objects[o].isLight
                 )
 
                 if (objects[o].texture) {
