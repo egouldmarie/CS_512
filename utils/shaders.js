@@ -68,7 +68,7 @@ void main() {
   } else {
     // Tangent frame (T, B, N)
     vec3 N = normalize(vNormal);
-    vec3 T = normalize(vTangent - dot(vTangent, N) * N);
+    vec3 T = -normalize(vTangent - dot(vTangent, N) * N);
     vec3 B = cross(N, T);
     mat3 TBN = mat3(T, B, N);
 
