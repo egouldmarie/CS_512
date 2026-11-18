@@ -28,8 +28,9 @@ const objSelectors = [
     document.getElementById("segE")
 ]
 
-let shader = new Shader(gl, vertEditor.value, fragEditor.value, {
-    uTime: { type: "float", value: 0 }
+const shader = new Shader(gl, vertEditor.value, fragEditor.value, {
+    uTime: { type: "float", value: 0 },
+    aColor: { type: "vec3", value: [0.1, 0.1, 0.1] }
 })
 
 let segmentA = new Object(gl, {
@@ -209,6 +210,13 @@ const sColElem = document.getElementById("sColor")
 const shinElem = document.getElementById("shininess")
 const bumpElem = document.getElementById("bumpScale")
 
+aColElem.value = shader.uniforms.aColor.value[0]
+aColElem.oninput = () => {
+    shader.uniforms.aColor.value[0] = Number(aColElem.value)
+    shader.uniforms.aColor.value[1] = Number(aColElem.value)
+    shader.uniforms.aColor.value[2] = Number(aColElem.value)
+}
+
 let activeObj
 let activeIdx = 0
 function setActiveSegment(idx) {
@@ -219,7 +227,6 @@ function setActiveSegment(idx) {
     xRotElem.value = activeObj.rotation.x
     yRotElem.value = activeObj.rotation.y
     zRotElem.value = activeObj.rotation.z
-    aColElem.value = activeObj.aColor[0]
     sColElem.value = activeObj.sColor[0]
     shinElem.value = activeObj.shininess
     document.getElementById("bumpScale").value = activeObj.bumpScale
@@ -237,8 +244,6 @@ function updateObj() {
     activeObj.rotation.x = Number(xRotElem.value)
     activeObj.rotation.y = Number(yRotElem.value)
     activeObj.rotation.z = Number(zRotElem.value)
-    let a = Number(aColElem.value)
-    activeObj.aColor = [a, a, a]
     let s = Number(sColElem.value)
     activeObj.sColor = [s, s, s]
     activeObj.shininess = Number(shinElem.value)
@@ -253,9 +258,6 @@ yRotElem.oninput = () => {
     updateObj()
 }
 zRotElem.oninput = () => {
-    updateObj()
-}
-aColElem.oninput = () => {
     updateObj()
 }
 sColElem.oninput = () => {

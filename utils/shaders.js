@@ -42,11 +42,11 @@ in vec3 vTangent;
 in vec3 vPosition;
 
 uniform vec3 aColor;
+
 uniform vec3 dColor;
 uniform vec3 sColor;
 
 uniform float isLight;
-
 uniform float shininess;
 
 uniform float bumpScale;
@@ -97,7 +97,7 @@ void main() {
     vec3 V = normalize(-vPosition); // camera sits at the origin
 
     // ambient coefficient
-    vec3 Ka = vec3(0.1);
+    vec3 Ka = aColor;
 
     // light 1 (white light)
     vec3 L1 = normalize(vLP1 - vPosition);

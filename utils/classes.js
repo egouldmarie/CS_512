@@ -104,7 +104,6 @@ class Object extends Node {
             positions,
             shininess,
             bumpScale,
-            aColor,
             dColor,
             sColor,
             textureMode,
@@ -122,7 +121,6 @@ class Object extends Node {
         this.tangents = tangents
         this.positions = positions
 
-        this.aColor = aColor || [1.0, 1.0, 1.0]
         this.dColor = dColor || [1.0, 1.0, 1.0]
         this.sColor = sColor || [1.0, 1.0, 1.0]
         this.shininess = shininess || 1.0
@@ -450,6 +448,8 @@ class Shader {
                     this.uniformLocations[i],
                     this.uniforms[i].value
                 )
+            } else if (this.uniforms[i].type === "vec3") {
+                gl.uniform3fv(this.uniformLocations[i], this.uniforms[i].value)
             }
         }
 
@@ -479,12 +479,6 @@ class Shader {
                     this.uniformLocations["normalMatrix"],
                     false,
                     objects[o].normalMatrix
-                )
-
-                // ambient coefficient
-                gl.uniform3fv(
-                    this.uniformLocations["aColor"],
-                    objects[o].aColor
                 )
 
                 // diffuse coefficient
