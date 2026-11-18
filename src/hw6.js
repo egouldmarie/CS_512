@@ -127,7 +127,7 @@ function setActiveSegment(idx) {
     document.getElementById("xRot").value = activeObj.rotation.x
     document.getElementById("yRot").value = activeObj.rotation.y
     document.getElementById("zRot").value = activeObj.rotation.z
-    document.getElementById("aColor").value = activeObj.aColor[0]
+    //document.getElementById("aColor").value = activeObj.aColor[0]
     document.getElementById("sColor").value = activeObj.sColor[0]
     document.getElementById("shininess").value = activeObj.shininess
     document.getElementById("bumpScale").value = activeObj.bumpScale
@@ -162,8 +162,8 @@ function updateObj() {
     activeObj.rotation.x = Number(document.getElementById("xRot").value)
     activeObj.rotation.y = Number(document.getElementById("yRot").value)
     activeObj.rotation.z = Number(document.getElementById("zRot").value)
-    let a = Number(document.getElementById("aColor").value)
-    activeObj.aColor = [a, a, a]
+    //let a = Number(document.getElementById("aColor").value)
+    //activeObj.aColor = [a, a, a]
     let s = Number(document.getElementById("sColor").value)
     activeObj.sColor = [s, s, s]
     activeObj.shininess = Number(document.getElementById("shininess").value)
