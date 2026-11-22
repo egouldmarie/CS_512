@@ -21,16 +21,14 @@ function createProgram(vsSource, fsSource) {
     return prog
 }
 
-const vertEditor = document.getElementById("vertEditor")
 const fragEditor = document.getElementById("fragEditor")
 const shaderError = document.getElementById("shaderError")
-vertEditor.value = document.getElementById("vertex-shader").textContent
-fragEditor.value = document.getElementById("fragment-shader").textContent
+fragEditor.value = rayFragmentShader
 
 let program
 function updateProgram() {
     try {
-        const prog = createProgram(vertEditor.value, fragEditor.value)
+        const prog = createProgram(rayVertexShader, fragEditor.value)
         gl.deleteProgram(program)
         program = prog
         gl.useProgram(program)
@@ -40,7 +38,6 @@ function updateProgram() {
     }
 }
 updateProgram()
-vertEditor.addEventListener("input", updateProgram)
 fragEditor.addEventListener("input", updateProgram)
 
 gl.bindVertexArray(gl.createVertexArray())
