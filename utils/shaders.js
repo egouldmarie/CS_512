@@ -140,10 +140,10 @@ uniform int u_maxBounces;
 uniform vec2 u_resolution;
 uniform vec2 u_cameraOrbit;
 uniform float u_ambientStrength; //Ambient fill light for better visual
+uniform float u_lightPower;
 
 out vec4 fragColor;
 
-const float LIGHT_POWER = 3.0;
 const float FLOOR_Y = -2.0;
 const float CHECKER_SIZE = 3.0;
 
@@ -289,12 +289,12 @@ vec3 trace(Ray ray) {
 
         if (!hit.hit) {
             float t = 0.5 * (ray.direction.y + 1.0);
-            color += attenuation * mix(vec3(0.09, 0.12, 0.18), vec3(0.18, 0.21, 0.27), t);  // sky
+            color += attenuation * u_ambientStrength * mix(vec3(0.09, 0.12, 0.18), vec3(0.18, 0.21, 0.27), t);  // sky
             break;
         }
 
         if (hit.isLight) {
-            color += attenuation * hit.color * LIGHT_POWER;
+            color += attenuation * hit.color * u_lightPower;
             break;
         }
 
@@ -344,7 +344,7 @@ vec3 trace(Ray ray) {
                 float visible = blocker.hit && blocker.t < lightDist ? 0.0 : 1.0;
                 float diff = max(dot(hit.normal, lightDir), 0.0);
                 float falloff = 1.0 / (1.0 + 0.1 * lightDist * lightDist);
-                shading += lightSphere[i].color * LIGHT_POWER * diff * falloff * visible;
+                shading += lightSphere[i].color * u_lightPower * diff * falloff * visible;
             }
             shading *= hit.color;
 

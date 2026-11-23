@@ -52,8 +52,9 @@ gl.enableVertexAttribArray(0)
 
 const bounces = document.getElementById("bounces")
 const ambient = document.getElementById("ambient")
+const power = document.getElementById("power")
 //const refract = document.getElementById("refract")
-for (const slider of [bounces, ambient]) {
+for (const slider of [bounces, ambient, power]) {
     slider.addEventListener(
         "input",
         () =>
@@ -82,6 +83,7 @@ function render(time) {
     gl.uniform1f(uniform("u_time"), time / 1000)
     gl.uniform2f(uniform("u_resolution"), canvas.width, canvas.height)
     gl.uniform1i(uniform("u_maxBounces"), bounces.value)
+    gl.uniform1f(uniform("u_lightPower"), power.value)
     //gl.uniform1f(uniform("u_refractionIdx"), refract.value)
     gl.uniform1f(uniform("u_ambientStrength"), ambient.value)
     gl.uniform2f(uniform("u_cameraOrbit"), pitch, yaw)
