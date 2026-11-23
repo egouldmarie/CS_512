@@ -145,7 +145,7 @@ out vec4 fragColor;
 const float LIGHT_POWER = 3.0;
 const float FLOOR_Y = -2.0;
 const float CHECKER_SIZE = 3.0;
-const float GLASS_IOR = 1.5;  // refractive index of the glass sphere
+const float GLASS_IOR = 1.05;  // refractive index of the glass sphere
 
 struct Ray {
     vec3 origin;
@@ -156,6 +156,7 @@ struct Sphere {
     vec3 center;
     float radius;
     vec3 color;
+    float reflectivity;
 };
 
 struct Cube {
@@ -183,14 +184,17 @@ Cube cube;
 
 void initScene(float time) {
     float a = time * 0.5;
-    sphere = Sphere(vec3(cos(a) * 2.5, sin(a * 1.3) * 0.8, -6.0 + sin(a) * 0.5), 1.0, vec3(1.0, 0.3, 0.3));
+    sphere = Sphere(vec3(cos(a) * 2.5, sin(a * 1.3) * 0.8, -6.0 + sin(a) * 0.5), 1.0, vec3(1.0, 0.3, 0.3), 0.1);
 
     float b = time * 0.3;
     cube = Cube(vec3(sin(b) * 2.0, cos(b * 1.5) + 0.5, -9.0 + cos(b * 0.7)), 0.8, vec3(0.3, 0.8, 0.3), 0.85);
 
-    lightSphere[0] = Sphere(vec3(4.0, 3.0, -4.0), 0.3, vec3(1.0, 1.0, 0.9));
-    lightSphere[1] = Sphere(vec3(-4.0, 3.0, -4.0), 0.3, vec3(0.0, 0.5, 1.0));
-    lightSphere[2] = Sphere(vec3(0.0, 1.0, -15.0), 0.1, vec3(1.0, 0.5, 0.0));
+    float c = time * 0.1;
+    glassSphere = Sphere(vec3(cos(c)*3.0, sin(c*1.6), -4.0 + sin(c) * 0.2), 0.6, vec3(0.5, 0.1, 1.0), 0.0);
+
+    lightSphere[0] = Sphere(vec3(4.0, 3.0, -4.0), 0.3, vec3(1.0, 1.0, 0.9), 0.0);
+    lightSphere[1] = Sphere(vec3(-4.0, 3.0, -4.0), 0.3, vec3(0.0, 0.5, 1.0), 0.0);
+    lightSphere[2] = Sphere(vec3(0.0, 1.0, -15.0), 0.1, vec3(1.0, 0.5, 0.0), 0.0);
 }
 
 bool intersectSphere(Ray ray, Sphere s, out float t) {
@@ -225,15 +229,10 @@ bool intersectCube(Ray ray, out float t, out vec3 normal) {
     return true;
 }
 
-//eta = n1 / n2
-//vec3 refraction(vec3 I, vec3 N, float eta) {
-//    <!-- insert your code here -->
-//}
-
 // Schlick approximation
-//float schlick(float cosine, float ref_idx) {
-//    <!-- insert your code here -->
-//}
+float schlick(float cosTheta, float F0) {
+    return F0 + (1.0 - F0)*pow(clamp(1.0 - cosTheta, 0., 1.), 5.);
+}
 
 bool intersectFloor(Ray ray, out float t) {
     if (abs(ray.direction.y) < 0.0001) return false;
@@ -269,7 +268,12 @@ HitData traceScene(Ray ray, bool includeLight) {
 
     if (intersectSphere(ray, sphere, t) && t < hit.t) {
         vec3 p = ray.origin + ray.direction * t;
-        hit = HitData(true, t, p, (p - sphere.center) / sphere.radius, sphere.color, 0.0, false, false);
+        hit = HitData(true, t, p, (p - sphere.center) / sphere.radius, sphere.color, sphere.reflectivity, false, false);
+    }
+    
+    if(intersectSphere(ray, glassSphere, t) && t < hit.t) {
+        vec3 p = ray.origin + ray.direction * t;
+        hit = HitData(true, t, p, (p - glassSphere.center) / glassSphere.radius, glassSphere.color, sphere.reflectivity, false, true);
     }
 
     return hit;
@@ -290,50 +294,66 @@ vec3 trace(Ray ray) {
         }
 
         if (hit.isLight) {
-            color += attenuation * hit.color; //* LIGHT_POWER;
+            color += attenuation * hit.color * LIGHT_POWER;
             break;
         }
 
-        // Refraction: (option 1)either reflects or refracts the ray, whichever Schlick says is stronger
-        // (option 2): finalColor = hit.color * (F * reflectionColor + (1.0 - F) * refractionColor)
-        // (option 3): Monte Carlo Sampling (multiple rays per pixel), reflect with probability F (random() < schlick_value), else refract, and average many samples per pixel
         if (hit.isGlass) {
-        //    <!-- insert your code here -->
+            // Refraction: either reflects or refracts the ray, whichever Schlick says is stronger
+            float n1;
+            float n2;
+            if(dot(-ray.direction, hit.normal) < 0.0) {
+                // inside object
+                n1 = GLASS_IOR;
+                n2 = 1.0;
+            } else {
+                // outside object
+                n1 = 1.0;
+                n2 = GLASS_IOR;
+            }
+            float cosTheta1 = dot(-ray.direction, hit.normal);
+            float sinTheta1 = sqrt(1.0 - cosTheta1*cosTheta1);
+            float sinTheta2 = (n1/n2)*sinTheta1;
+            float cosTheta2 = sqrt(1.0 - sinTheta2*sinTheta2);;
 
-        //    vec3 direction;
-        //    if (total_internal_reflection || schlick_value > 0.5) {
-                //direction = reflection ray
-        //        <!-- insert your code here -->
-        //    } else {
-                //direction = refraction ray
-        //        <!-- insert your code here -->
-        //    }
+            bool total_internal_reflection = n1 > n2 && sinTheta1 > (n2/n1) ? true : false;
 
-        //    ray = Ray(hit.point + direction * 0.001, direction);
-              //Use Schlick approximation to determine contributions from reflection and refraction
-        //    attenuation *= hit.color;
-        //    continue;
+            float F0 = (n1-n2)/(n1+n2);
+            float schlick_value = schlick(n1 > n2 ? cosTheta2 : cosTheta1, F0*F0);
+
+            vec3 direction;
+            if (total_internal_reflection || schlick_value > 0.5) {
+                direction = reflect(ray.direction, hit.normal);
+                attenuation *= schlick_value;
+            } else {
+                direction = refract(ray.direction, hit.normal, n1/n2);
+                attenuation *= 1.0 - schlick_value;
+            }
+
+            ray = Ray(hit.point + direction * 0.001, direction);
+            attenuation *= hit.color;
+            continue;
+        } else {
+            vec3 shading = vec3(u_ambientStrength);
+            for(int i=0; i<lightSphere.length(); i++) {
+                vec3 toLight = lightSphere[i].center - hit.point;
+                float lightDist = length(toLight);
+                vec3 lightDir = toLight / lightDist;
+
+                HitData blocker = traceScene(Ray(hit.point + hit.normal * 0.001, lightDir), false);
+                float visible = blocker.hit && blocker.t < lightDist ? 0.0 : 1.0;
+                float diff = max(dot(hit.normal, lightDir), 0.0);
+                float falloff = 1.0 / (1.0 + 0.1 * lightDist * lightDist);
+                shading += lightSphere[i].color * LIGHT_POWER * diff * falloff * visible;
+            }
+            shading *= hit.color;
+
+            color += attenuation * shading * (1.0 - hit.reflectivity);
+
+            if (hit.reflectivity == 0.0) break;
+            attenuation *= hit.reflectivity;
+            ray = Ray(hit.point + hit.normal * 0.001, reflect(ray.direction, hit.normal));
         }
-
-        vec3 shading = vec3(u_ambientStrength);
-        for(int i=0; i<lightSphere.length(); i++) {
-            vec3 toLight = lightSphere[i].center - hit.point;
-            float lightDist = length(toLight);
-            vec3 lightDir = toLight / lightDist;
-
-            HitData blocker = traceScene(Ray(hit.point + hit.normal * 0.001, lightDir), false);
-            float visible = blocker.hit && blocker.t < lightDist ? 0.0 : 1.0;
-            float diff = max(dot(hit.normal, lightDir), 0.0);
-            float falloff = 1.0 / (1.0 + 0.1 * lightDist * lightDist);
-            shading += lightSphere[i].color * LIGHT_POWER * diff * falloff * visible;
-        }
-        shading *= hit.color;
-
-        color += attenuation * shading * (1.0 - hit.reflectivity);
-
-        if (hit.reflectivity == 0.0) break;
-        attenuation *= hit.reflectivity;
-        ray = Ray(hit.point + hit.normal * 0.001, reflect(ray.direction, hit.normal));
     }
 
     return color;
@@ -351,7 +371,7 @@ void main() {
 
     vec3 target = vec3(0.0, 0.0, -5.0);
     vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
-    Ray ray = Ray(target + camera * vec3(0.0, 0.0, 7.0), camera * normalize(vec3(uv, -1.5)));
+    Ray ray = Ray(target + camera * vec3(0.0, 0.0, 8.0), camera * normalize(vec3(uv, -1.5)));
 
     fragColor = vec4(pow(trace(ray), vec3(1.0 / 2.2)), 1.0);  // gamma correction
 }`
