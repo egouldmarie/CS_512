@@ -135,6 +135,7 @@ const rayFragmentShader = `#version 300 es
 precision highp float;
 
 uniform float u_time;
+uniform float u_refractionIdx;
 uniform int u_maxBounces;
 uniform vec2 u_resolution;
 uniform vec2 u_cameraOrbit;
@@ -145,7 +146,6 @@ out vec4 fragColor;
 const float LIGHT_POWER = 3.0;
 const float FLOOR_Y = -2.0;
 const float CHECKER_SIZE = 3.0;
-const float GLASS_IOR = 1.05;  // refractive index of the glass sphere
 
 struct Ray {
     vec3 origin;
@@ -304,12 +304,12 @@ vec3 trace(Ray ray) {
             float n2;
             if(dot(-ray.direction, hit.normal) < 0.0) {
                 // inside object
-                n1 = GLASS_IOR;
+                n1 = u_refractionIdx;
                 n2 = 1.0;
             } else {
                 // outside object
                 n1 = 1.0;
-                n2 = GLASS_IOR;
+                n2 = u_refractionIdx;
             }
             float cosTheta1 = dot(-ray.direction, hit.normal);
             float sinTheta1 = sqrt(1.0 - cosTheta1*cosTheta1);
@@ -323,10 +323,10 @@ vec3 trace(Ray ray) {
 
             vec3 direction;
             if (total_internal_reflection || schlick_value > 0.5) {
-                direction = reflect(ray.direction, hit.normal);
+                direction = reflect(-ray.direction, hit.normal);
                 attenuation *= schlick_value;
             } else {
-                direction = refract(ray.direction, hit.normal, n1/n2);
+                direction = refract(-ray.direction, hit.normal, n1/n2);
                 attenuation *= 1.0 - schlick_value;
             }
 
